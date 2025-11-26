@@ -19,9 +19,24 @@ struct MedicationView: View {
                 ConfirmButton()
             }
             .padding(25)
-            //Navigation details
-            .navigationBarTitle("Add Medication")
-            .navigationBarTitleDisplayMode(.automatic)
+            .toolbar{
+                //Chevron Left button
+                ToolbarItem(placement: .navigationBarLeading){
+                    Button{
+                        
+                    } label: {
+                        Image(systemName: "chevron.left")
+
+                    }
+                }
+                //Add medication title
+                ToolbarItem(placement: .principal){
+                    Text("Add Medication").font(.title.bold())
+                }
+            }
+//            //Navigation details
+//            .navigationBarTitle("Add Medication")
+//            .navigationBarTitleDisplayMode(.large)
         }
     }
 }
