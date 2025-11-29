@@ -6,152 +6,152 @@
 //
 
 import SwiftUI
+import Foundation
 
 struct MedicationView: View {
+    @StateObject private var viewModel = MedicationViewModel()
+    
     var body: some View {
         NavigationStack {
             VStack {
                 Spacer()
-                MedicineName()
-                MedicineDosage()
-                MedicineTime()
+                MedicineNameField(name: $viewModel.medicineName)
+                MedicineDosageControl(dosage: $viewModel.dosage)
+                MedicineTimeSelector(
+                    selectedTime: $viewModel.selectedTime,
+                    onSelect: viewModel.selectTime
+                )
                 Spacer()
-                ConfirmButton()
+                ConfirmButton(
+                    isEnabled: viewModel.isConfirmEnabled,
+                    action: viewModel.confirmMedication
+                )
             }
             .padding(25)
-            .toolbar{
-                //Chevron Left button
-                ToolbarItem(placement: .navigationBarLeading){
-                    Button{
-                        
-                    } label: {
+            .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button(action: viewModel.navigateBack) {
                         Image(systemName: "chevron.left")
-
                     }
                 }
-                //Add medication title
-                ToolbarItem(placement: .principal){
+                ToolbarItem(placement: .principal) {
                     Text("Add Medication").font(.title.bold())
                 }
             }
-//            //Navigation details
-//            .navigationBarTitle("Add Medication")
-//            .navigationBarTitleDisplayMode(.large)
         }
     }
 }
 
-// -----Medicine name and the text field-----
-
-struct MedicineName : View {
-    @State public var MedicineName: String = ""
+// MARK: - Subviews
+struct MedicineNameField: View {
+    @Binding var name: String
+    
     var body: some View {
         VStack(alignment: .leading) {
             Text("Medicine Name").font(.title3).bold()
-            TextField("", text: $MedicineName)
+            TextField("", text: $name)
                 .padding()
-                .background(Color.accent.opacity(0.10))
+                .background(Color.accentColor.opacity(0.10))
                 .cornerRadius(12)
         }
-        .padding(.bottom,20)
+        .padding(.bottom, 20)
     }
 }
 
-// -----Medicine dosage and stepper-----
-
-struct MedicineDosage: View {
-    @State private var value: Int = 0
-    var body: some View {
-        HStack {
-            //Dosage and the Stepper
-            Text("Dosage").font(.title3).bold()
-            LabeledStepper("", description: "", value: $value).font(.title3).bold()
-        } .padding(.bottom,20)
-
-    }
-}
-
-// -----Medicine Time-----
-
-struct MedicineTime : View {
-    enum TimeOfDay {
-        case morning
-        case night
-    }
-
-    @State private var selected: TimeOfDay? = nil
+struct MedicineDosageControl: View {
+    @Binding var dosage: Int
     
     var body: some View {
-        VStack(alignment: .leading){
+        HStack {
+            Text("Dosage").font(.title3).bold()
+            LabeledStepper("", description: "", value: $dosage)
+                .font(.title3).bold()
+        }
+        .padding(.bottom, 20)
+    }
+}
+
+struct MedicineTimeSelector: View {
+    @Binding var selectedTime: Medication.TimeOfDay?
+    let onSelect: (Medication.TimeOfDay) -> Void
+    
+    var body: some View {
+        VStack(alignment: .leading) {
             Text("Time").font(.title3).bold()
-            HStack{
-                //Morning button
-                Button {
-                    selected = .morning
-                } label: {
-                    Label {
-                        Text("Morning")
-                            .font(.title3)
-                            .bold()
-                            .foregroundStyle(Color.black)
-                    } icon: {
-                        Image(systemName: "sun.max.fill")
-                            .foregroundStyle(Color.ourYellow).font(.title3).bold()
-                    }
+            HStack {
+                TimeButton(
+                    title: "Morning",
+                    icon: "sun.max.fill",
+                    iconColor: .yellow,
+                    isSelected: selectedTime == .morning
+                ) {
+                    onSelect(.morning)
                 }
-                .frame(width: 148, height: 56)
-                .background(selected == .morning ? Color.ourYellow.opacity(0.2) : Color.accent.opacity(0.1))
-                .cornerRadius(65)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 65)
-                        .stroke(selected == .morning ? Color.ourYellow : Color.clear, lineWidth: 3)
-                )
                 
                 Spacer()
-                //Night button
-                Button {
-                    selected = .night
-                } label: {
-                    Label {
-                        Text("Night")
-                            .font(.title3)
-                            .bold()
-                            .foregroundStyle(Color.black)
-                    } icon: {
-                        Image(systemName: "moon.fill")
-                            .foregroundStyle(Color.accent).font(.title3).bold()
-                    }
+                
+                TimeButton(
+                    title: "Night",
+                    icon: "moon.fill",
+                    iconColor: .accentColor,
+                    isSelected: selectedTime == .night
+                ) {
+                    onSelect(.night)
                 }
-                .frame(width: 148, height: 56)
-                .background(selected == .night ? Color.accent.opacity(0.3) : Color.accent.opacity(0.1))
-                .cornerRadius(65)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 65)
-                        .stroke(selected == .night ? Color.accent : Color.clear, lineWidth: 3)
-                )
-            }.padding(.horizontal,25)
+            }
+            .padding(.horizontal, 25)
         }
+    }
+}
+
+struct TimeButton: View {
+    let title: String
+    let icon: String
+    let iconColor: Color
+    let isSelected: Bool
+    let action: () -> Void
+    
+    var body: some View {
+        Button(action: action) {
+            Label {
+                Text(title)
+                    .font(.title3)
+                    .bold()
+                    .foregroundStyle(Color.black)
+            } icon: {
+                Image(systemName: icon)
+                    .foregroundStyle(iconColor)
+                    .font(.title3).bold()
+            }
+        }
+        .frame(width: 148, height: 56)
+        .background(isSelected ? iconColor.opacity(0.2) : Color.accentColor.opacity(0.1))
+        .cornerRadius(65)
+        .overlay(
+            RoundedRectangle(cornerRadius: 65)
+                .stroke(isSelected ? iconColor : Color.clear, lineWidth: 3)
+        )
     }
 }
 
 struct ConfirmButton: View {
+    let isEnabled: Bool
+    let action: () -> Void
+    
     var body: some View {
-        Button {
-            // Add confirm action here
-        } label: {
+        Button(action: action) {
             Text("Confirm")
                 .font(.title2)
                 .bold()
                 .foregroundStyle(Color.white)
         }
-            .frame(width: 354, height: 56)
-            .background(.ourGrey)
-            .cornerRadius(43)
-        
+        .frame(width: 354, height: 56)
+        .background(isEnabled ? Color.gray : Color.gray.opacity(0.5))
+        .cornerRadius(43)
+        .disabled(!isEnabled)
     }
 }
 
 #Preview {
     MedicationView()
 }
-
