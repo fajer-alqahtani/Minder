@@ -5,7 +5,7 @@ import SwiftUI
 public struct Style {
 
     public init(
-        height: Double = 34.0,
+        height: Double = 40.0,
         labelWidth: Double = 48.0,
         buttonWidth: Double = 48.0,
         buttonPadding: Double = 12.0,
@@ -15,7 +15,9 @@ public struct Style {
         titleColor: Color = Color(.label),
         descriptionColor: Color = Color(.secondaryLabel),
         valueColor: Color = Color(.label)
+        
     ) {
+
         self.height = height
         self.labelWidth = labelWidth
         self.buttonWidth = buttonWidth
