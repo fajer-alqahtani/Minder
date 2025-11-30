@@ -142,14 +142,14 @@ extension EmotionalStatusView {
             Button(action: {
                 viewModel.saveEntry(context: modelContext)
             }) {
-                Text("CONFIRM ENTRY")
-                    .font(.headline)
+                Text("CONFIRM")
+                    .font(.title2)
                     .fontWeight(.bold)
                     .frame(maxWidth: .infinity)
                     .frame(height: 55)
                     .background(viewModel.isFormComplete ? Color.minderDark : Color.gray.opacity(0.3))
                     .foregroundColor(.white)
-                    .cornerRadius(16)
+                    .cornerRadius(43)
                     .shadow(radius: viewModel.isFormComplete ? 5 : 0)
             }
             .disabled(!viewModel.isFormComplete)

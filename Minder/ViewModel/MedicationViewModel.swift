@@ -7,11 +7,19 @@
 
 import Foundation
 import Combine
+import SwiftData
 
-class MedicationViewModel: ObservableObject {
-    @Published var medicineName: String = ""
-    @Published var dosage: Int = 0
-    @Published var selectedTime: Medication.TimeOfDay? = nil
+@Observable
+class MedicationViewModel {
+    var medicineName: String = ""
+    var dosage: Int = 0
+    var selectedTime: TimeOfDay? = nil
+    
+    private var modelContext: ModelContext
+    
+    init(modelContext: ModelContext) {
+        self.modelContext = modelContext
+    }
     
     var isConfirmEnabled: Bool {
         !medicineName.isEmpty && dosage > 0 && selectedTime != nil
@@ -23,12 +31,24 @@ class MedicationViewModel: ObservableObject {
             dosage: dosage,
             timeOfDay: selectedTime
         )
-        // Handle medication confirmation (save to database, etc.)
-        print("Medication confirmed: \(medication)")
+        
+        // Save to SwiftData
+        modelContext.insert(medication)
+        
+        print("✅ Saved to SwiftData: \(medication.name) - \(medication.dosage)mg - \(medication.timeOfDay?.rawValue ?? "No time")")
+
+        // Clear the form
+        resetForm()
     }
     
-    func selectTime(_ time: Medication.TimeOfDay) {
+    func selectTime(_ time: TimeOfDay) {
         selectedTime = time
+    }
+    
+    func resetForm() {
+        medicineName = ""
+        dosage = 0
+        selectedTime = nil
     }
     
     func navigateBack() {

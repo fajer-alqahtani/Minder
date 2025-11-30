@@ -3,40 +3,68 @@
 //  Minder
 //
 //  Created by Areeg Altaiyah on 24/11/2025.
-//
+
 
 import SwiftUI
-import Foundation
+import SwiftData
 
 struct MedicationView: View {
-    @StateObject private var viewModel = MedicationViewModel()
-    
+    @Environment(\.modelContext) private var modelContext
+    @Environment(\.dismiss) private var dismiss
+    @State private var viewModel: MedicationViewModel?
+
     var body: some View {
         NavigationStack {
-            VStack {
-                Spacer()
-                MedicineNameField(name: $viewModel.medicineName)
-                MedicineDosageControl(dosage: $viewModel.dosage)
-                MedicineTimeSelector(
-                    selectedTime: $viewModel.selectedTime,
-                    onSelect: viewModel.selectTime
-                )
-                Spacer()
-                ConfirmButton(
-                    isEnabled: viewModel.isConfirmEnabled,
-                    action: viewModel.confirmMedication
-                )
+            Group {
+                if let viewModel {
+                    VStack {
+                        Spacer()
+                        MedicineNameField(name: Binding(
+                            get: { viewModel.medicineName },
+                            set: { viewModel.medicineName = $0 }
+                        ))
+                        MedicineDosageControl(dosage: Binding(
+                            get: { viewModel.dosage },
+                            set: { viewModel.dosage = $0 }
+                        ))
+                        MedicineTimeSelector(
+                            selectedTime: Binding(
+                                get: { viewModel.selectedTime },
+                                set: { viewModel.selectedTime = $0 }
+                            ),
+                            onSelect: viewModel.selectTime
+                        )
+                        Spacer()
+                        ConfirmButton(
+                            isEnabled: viewModel.isConfirmEnabled,
+                            action: {
+                                viewModel.confirmMedication()
+                                dismiss()
+                            }
+                        )
+                    }
+                    .padding(25)
+                } else {
+                    // Show loading indicator while the viewModel is loading
+                    ProgressView()
+                }
             }
-            .padding(25)
             .toolbar {
+                //Back button
                 ToolbarItem(placement: .navigationBarLeading) {
-                    Button(action: viewModel.navigateBack) {
+                    Button(action: { dismiss() }) {
                         Image(systemName: "chevron.left")
                     }
                 }
+                // Title
                 ToolbarItem(placement: .principal) {
                     Text("Add Medication").font(.title.bold())
                 }
+            }
+        }
+        .onAppear {
+            if viewModel == nil {
+                viewModel = MedicationViewModel(modelContext: modelContext)
             }
         }
     }
@@ -72,8 +100,8 @@ struct MedicineDosageControl: View {
 }
 
 struct MedicineTimeSelector: View {
-    @Binding var selectedTime: Medication.TimeOfDay?
-    let onSelect: (Medication.TimeOfDay) -> Void
+    @Binding var selectedTime: TimeOfDay?
+    let onSelect: (TimeOfDay) -> Void
     
     var body: some View {
         VStack(alignment: .leading) {
@@ -117,7 +145,7 @@ struct TimeButton: View {
                 Text(title)
                     .font(.title3)
                     .bold()
-                    .foregroundStyle(Color.black)
+                    .foregroundStyle(Color.primary) 
             } icon: {
                 Image(systemName: icon)
                     .foregroundStyle(iconColor)
@@ -140,18 +168,19 @@ struct ConfirmButton: View {
     
     var body: some View {
         Button(action: action) {
-            Text("Confirm")
+            Text("CONFIRM")
                 .font(.title2)
                 .bold()
                 .foregroundStyle(Color.white)
         }
         .frame(width: 354, height: 56)
-        .background(isEnabled ? Color.gray : Color.gray.opacity(0.5))
+        .background(isEnabled ? Color.ourGrey : Color.gray.opacity(0.3))
         .cornerRadius(43)
-        .disabled(!isEnabled)
+        .shadow(radius: isEnabled ? 5 : 0)        .disabled(!isEnabled)
     }
 }
 
 #Preview {
     MedicationView()
+        .modelContainer(for: Medication.self)
 }
