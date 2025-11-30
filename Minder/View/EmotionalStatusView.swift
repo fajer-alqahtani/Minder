@@ -161,5 +161,6 @@ extension EmotionalStatusView {
 
 #Preview {
     EmotionalStatusView()
-        .modelContainer(for: Item.self, inMemory: true)
+        // CHANGE Item.self TO EmotionLog.self
+        .modelContainer(for: EmotionLog.self, inMemory: true)
 }
