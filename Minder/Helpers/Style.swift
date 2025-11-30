@@ -17,7 +17,6 @@ public struct Style {
         valueColor: Color = Color(.label)
         
     ) {
-        let multiplier = sizeClass == .compact ? 0.9 : 1.0
 
         self.height = height
         self.labelWidth = labelWidth
