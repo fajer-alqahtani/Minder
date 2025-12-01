@@ -35,7 +35,7 @@ class MedicationViewModel {
         // Save to SwiftData
         modelContext.insert(medication)
         
-        print("✅ Saved to SwiftData: \(medication.name) - \(medication.dosage)mg - \(medication.timeOfDay?.rawValue ?? "No time")")
+        print("✅ Saved to SwiftData: \(medication.name) - \(medication.dosage) pills - \(medication.timeOfDay?.rawValue ?? "No time")")
 
         // Clear the form
         resetForm()

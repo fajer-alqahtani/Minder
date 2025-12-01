@@ -81,7 +81,7 @@ extension EmotionalStatusView {
                 Button(action: { viewModel.toggleEmotion(emotion) }) {
                     HStack {
                         Text(emotion.icon).font(.title2)
-                        Text(emotion.rawValue).fontWeight(.semibold)
+                        Text(emotion.rawValue).fontWeight(.semibold).font(.title3)
                     }
                     .frame(maxWidth: .infinity)
                     .frame(height: 60)

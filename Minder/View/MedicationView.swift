@@ -12,6 +12,7 @@ struct MedicationView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
     @State private var viewModel: MedicationViewModel?
+    @State private var showConfirmAlert = false
 
     var body: some View {
         NavigationStack {
@@ -38,12 +39,19 @@ struct MedicationView: View {
                         ConfirmButton(
                             isEnabled: viewModel.isConfirmEnabled,
                             action: {
-                                viewModel.confirmMedication()
-                                dismiss()
+                                showConfirmAlert = true
                             }
                         )
                     }
                     .padding(25)
+                    .alert("Medication Added", isPresented: $showConfirmAlert) {
+                        Button("OK") {
+                            viewModel.confirmMedication()
+                            dismiss()
+                        }
+                    } message: {
+                        Text("\(viewModel.medicineName) added successfully!\nDosage: \(viewModel.dosage) pill(s)")
+                    }
                 } else {
                     // Show loading indicator while the viewModel is loading
                     ProgressView()
@@ -58,7 +66,8 @@ struct MedicationView: View {
                 }
                 // Title
                 ToolbarItem(placement: .principal) {
-                    Text("Add Medication").font(.title.bold())
+                    Text("Add Medication").font(.title2.bold())
+                        .foregroundColor(.minderDark)
                 }
             }
         }
@@ -69,6 +78,10 @@ struct MedicationView: View {
         }
     }
 }
+
+
+
+
 
 // MARK: - Subviews
 struct MedicineNameField: View {
@@ -145,7 +158,7 @@ struct TimeButton: View {
                 Text(title)
                     .font(.title3)
                     .bold()
-                    .foregroundStyle(Color.primary) 
+                    .foregroundStyle(Color.primary)
             } icon: {
                 Image(systemName: icon)
                     .foregroundStyle(iconColor)
@@ -176,7 +189,8 @@ struct ConfirmButton: View {
         .frame(width: 354, height: 56)
         .background(isEnabled ? Color.ourGrey : Color.gray.opacity(0.3))
         .cornerRadius(43)
-        .shadow(radius: isEnabled ? 5 : 0)        .disabled(!isEnabled)
+        .shadow(radius: isEnabled ? 5 : 0)
+        .disabled(!isEnabled)
     }
 }
 
