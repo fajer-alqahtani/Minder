@@ -12,14 +12,18 @@ import SwiftUI
 // --- THE DATA ENUMS ---
 // These define the options available in the app.
 
+import SwiftUI
+
+import SwiftUI
+
 enum Emotion: String, CaseIterable, Codable {
-    case calm = "Calm"
-    case confused = "Confused"
-    case sad = "Sad"
-    case agitated = "Agitated"
-    case anxious = "Anxious"
-    case tired = "Tired"
-    case unknown = "Don't Know"
+    case calm
+    case confused
+    case sad
+    case agitated
+    case anxious
+    case tired
+    case unknown
 
     var icon: String {
         switch self {
@@ -32,13 +36,39 @@ enum Emotion: String, CaseIterable, Codable {
         case .unknown: return "❓"
         }
     }
+
+    /// Literal English text – Xcode can auto-extract these.
+    var localizedTitle: LocalizedStringKey {
+        switch self {
+        case .calm: return "Calm"
+        case .confused: return "Confused"
+        case .sad: return "Sad"
+        case .agitated: return "Agitated"
+        case .anxious: return "Anxious"
+        case .tired: return "Tired"
+        case .unknown: return "Don't know"
+        }
+    }
 }
 
+
+
 enum Intensity: String, CaseIterable, Codable {
-    case mild = "Mild"
-    case moderate = "Moderate"
-    case strong = "Strong"
+    case mild
+    case moderate
+    case strong
 }
+
+extension Intensity {
+    var localizedTitle: LocalizedStringKey {
+        switch self {
+        case .mild: return "Mild"
+        case .moderate: return "Moderate"
+        case .strong: return "Strong"
+        }
+    }
+}
+
 
 // --- THE SWIFTDATA MODEL ---
 // This is the actual object that gets saved to the database.

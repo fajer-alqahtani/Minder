@@ -16,25 +16,31 @@ struct MedicationView: View {
 
     var body: some View {
         NavigationStack {
+            
             Group {
                 if let viewModel {
                     VStack {
                         Spacer()
-                        MedicineNameField(name: Binding(
-                            get: { viewModel.medicineName },
-                            set: { viewModel.medicineName = $0 }
-                        ))
-                        MedicineDosageControl(dosage: Binding(
-                            get: { viewModel.dosage },
-                            set: { viewModel.dosage = $0 }
-                        ))
-                        MedicineTimeSelector(
-                            selectedTime: Binding(
-                                get: { viewModel.selectedTime },
-                                set: { viewModel.selectedTime = $0 }
-                            ),
-                            onSelect: viewModel.selectTime
-                        )
+                        VStack {
+                            MedicineNameField(name: Binding(
+                                get: { viewModel.medicineName },
+                                set: { viewModel.medicineName = $0 }
+                            ))
+                            
+                            MedicineDosageControl(dosage: Binding(
+                                get: { viewModel.dosage },
+                                set: { viewModel.dosage = $0 }
+                            ))
+                            MedicineTimeSelector(
+                                selectedTime: Binding(
+                                    get: { viewModel.selectedTime },
+                                    set: { viewModel.selectedTime = $0 }
+                                ),
+                                onSelect: viewModel.selectTime
+                            )
+                        }
+                        .padding(.bottom,60)
+
                         Spacer()
                         ConfirmButton(
                             isEnabled: viewModel.isConfirmEnabled,
@@ -44,6 +50,7 @@ struct MedicationView: View {
                         )
                     }
                     .padding(25)
+                    
                     .alert("Medication Added", isPresented: $showConfirmAlert) {
                         Button("OK") {
                             viewModel.confirmMedication()
@@ -58,12 +65,6 @@ struct MedicationView: View {
                 }
             }
             .toolbar {
-                //Back button
-                ToolbarItem(placement: .navigationBarLeading) {
-                    Button(action: { dismiss() }) {
-                        Image(systemName: "chevron.left")
-                    }
-                }
                 // Title
                 ToolbarItem(placement: .principal) {
                     Text("Add Medication").font(.title2.bold())
@@ -119,9 +120,10 @@ struct MedicineTimeSelector: View {
     var body: some View {
         VStack(alignment: .leading) {
             Text("Time").font(.title3).bold()
+            
             HStack {
                 TimeButton(
-                    title: "Morning",
+                    title: TimeOfDay.morning.localizedTitle,
                     icon: "sun.max.fill",
                     iconColor: .yellow,
                     isSelected: selectedTime == .morning
@@ -132,7 +134,7 @@ struct MedicineTimeSelector: View {
                 Spacer()
                 
                 TimeButton(
-                    title: "Night",
+                    title: TimeOfDay.night.localizedTitle,
                     icon: "moon.fill",
                     iconColor: .accentColor,
                     isSelected: selectedTime == .night
@@ -145,8 +147,9 @@ struct MedicineTimeSelector: View {
     }
 }
 
+
 struct TimeButton: View {
-    let title: String
+    let title: LocalizedStringKey
     let icon: String
     let iconColor: Color
     let isSelected: Bool
@@ -198,3 +201,4 @@ struct ConfirmButton: View {
     MedicationView()
         .modelContainer(for: Medication.self)
 }
+
