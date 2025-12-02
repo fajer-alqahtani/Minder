@@ -120,9 +120,10 @@ struct MedicineTimeSelector: View {
     var body: some View {
         VStack(alignment: .leading) {
             Text("Time").font(.title3).bold()
+            
             HStack {
                 TimeButton(
-                    title: "Morning",
+                    title: TimeOfDay.morning.localizedTitle,
                     icon: "sun.max.fill",
                     iconColor: .yellow,
                     isSelected: selectedTime == .morning
@@ -133,7 +134,7 @@ struct MedicineTimeSelector: View {
                 Spacer()
                 
                 TimeButton(
-                    title: "Night",
+                    title: TimeOfDay.night.localizedTitle,
                     icon: "moon.fill",
                     iconColor: .accentColor,
                     isSelected: selectedTime == .night
@@ -146,8 +147,9 @@ struct MedicineTimeSelector: View {
     }
 }
 
+
 struct TimeButton: View {
-    let title: String
+    let title: LocalizedStringKey
     let icon: String
     let iconColor: Color
     let isSelected: Bool
@@ -199,3 +201,4 @@ struct ConfirmButton: View {
     MedicationView()
         .modelContainer(for: Medication.self)
 }
+

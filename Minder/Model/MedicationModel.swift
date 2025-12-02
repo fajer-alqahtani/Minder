@@ -4,9 +4,17 @@ import SwiftUI
 
 // --- THE DATA ENUM ---
 enum TimeOfDay: String, CaseIterable, Codable {
-    case morning = "Morning"
-    case night = "Night"
+    case morning
+    case night
+    
+    var localizedTitle: LocalizedStringKey {
+        switch self {
+        case .morning: return "Morning"
+        case .night:   return "Night"
+        }
+    }
 }
+
 
 // --- THE SWIFTDATA MODEL ---
 @Model
