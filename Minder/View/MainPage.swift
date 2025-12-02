@@ -68,7 +68,8 @@ struct MainPage: View {
                                 .font(.system(size: 20))
 
                             Text("Medications")
-                                .font(.system(size: 16, weight: .semibold))
+                                .font(.subheadline)
+                                .bold()
                                 .foregroundColor(.ourDarkGrey)
 
                             Spacer()
@@ -97,7 +98,8 @@ struct MainPage: View {
                                 .font(.system(size: 20))
 
                             Text("Meals")
-                                .font(.system(size: 16, weight: .semibold))
+                                .font(.subheadline)
+                                .bold()
                                 .foregroundColor(.ourDarkGrey)
 
                             Spacer()
@@ -127,7 +129,8 @@ struct MainPage: View {
                                 .font(.system(size: 20))
 
                             Text("Emotional Status")
-                                .font(.system(size: 16, weight: .semibold))
+                                .font(.subheadline)
+                                .bold()
                                 .foregroundColor(.ourDarkGrey)
 
                             Spacer()
