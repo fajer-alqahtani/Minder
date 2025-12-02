@@ -24,7 +24,7 @@ struct MainPage: View {
                             .fill(Color.accentColor)
                             .frame(width: 387, height: 340)
                         
-                        // MinderM + DATE under it (top-left)
+                        // MinderM + Date under it
                             .overlay(alignment: .topLeading) {
                                 VStack(alignment: .leading, spacing: 8) {
                                     Image("MinderMark")
