@@ -95,7 +95,7 @@ struct SplashView: View {
             }
         }
         .fullScreenCover(isPresented: $showMain) {
-            EmotionalStatusView()
+            MainPage()
                 .modelContainer(for: EmotionLog.self)
         }
     }
