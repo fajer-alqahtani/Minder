@@ -103,11 +103,11 @@ struct MainPage: View {
                 VStack(spacing: 12) {
                     NavigationLink(
                                             destination:
-                                                Text("Medications trial Page") //  I need to write the view name example: Medictaions View()
+                                                MedicationView()
                                         ) {
                                             HStack(spacing: 12) {
                                                 Image(systemName: "pills.fill")
-                                                    .font(.system(size: 20))         // ICON bigger
+                                                    .font(.system(size: 20))
 
                                                 Text("Medications")
                                                     .font(.system(size: 16, weight: .semibold))
@@ -132,7 +132,7 @@ struct MainPage: View {
                     
                     NavigationLink(
                                            destination:
-                                               Text("Meals Page") //  I need to write the view name example: Meals View()
+                                               Text("Meals Page") //  Just a placeholder, I need to write the view name example: Meals View()
                                        ) {
                                            HStack(spacing: 12) {
                                                Image(systemName: "fork.knife")
@@ -162,7 +162,7 @@ struct MainPage: View {
                     
                     NavigationLink(
                                            destination:
-                                               Text("Emotional Status Page") //  I need to write the view name example: Emotional View()
+                                               EmotionalStatusView()
                                        ) {
                                            HStack(spacing: 12) {
                                                Image(systemName: "heart.text.square.fill")
@@ -191,7 +191,7 @@ struct MainPage: View {
                     
                     NavigationLink(
                         destination:
-                            Text("Summary Trial Page") //  I need to write the view name example: Emotional View()
+                            Text("Summary Trial Page") //  Just a placeholder, I need to write the view name example: Emotional View()
                     ) {
                         Text("Summary")
                             .font(Font.title)
