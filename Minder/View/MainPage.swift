@@ -41,10 +41,12 @@ struct MainPage: View {
                                     Text(viewModel.greeting)
                                         .font(.title)
                                         .foregroundColor(.ourDarkGrey)
-                                    Text("Let’s start today’s record.")
+                                        .padding(.top,30)
+                                    Text("Let's start today's record.")
                                         .font(.title)
                                         .bold()
                                         .foregroundColor(.ourDarkGrey)
+
                                     
                                 }
                                 .padding(.leading, 20)

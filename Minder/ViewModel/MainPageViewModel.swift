@@ -7,6 +7,7 @@
 
 import Foundation
 import Combine
+import SwiftUI
 
 class MainPageViewModel: ObservableObject {
     @Published var isShowingSettings = false
@@ -29,20 +30,23 @@ class MainPageViewModel: ObservableObject {
         print("Today is: \(dateString)")
     }
 
-    var greeting: String {
+    
+    var greeting: LocalizedStringKey {
         let hour = Calendar.current.component(.hour, from: Date())
 
         switch hour {
         case 0..<12:
-            return "\nGood morning!"
+            return "Good morning!"
         case 12..<17:
-            return "\nGood afternoon!"
+            return "Good afternoon!"
         case 17..<22:
-            return "\nGood evening"
+            return "Good evening"
         default:
-            return "\nGood night"
+            return "Good night"
         }
     }
+
+
 
     func didTapSettings() {
         isShowingSettings = true
