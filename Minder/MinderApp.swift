@@ -25,7 +25,7 @@ struct MinderApp: App {
 
     var body: some Scene {
         WindowGroup {
-            EmotionalStatusView()
+            SplashView()
         }
         .modelContainer(sharedModelContainer)
     }

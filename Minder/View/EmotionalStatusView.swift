@@ -80,12 +80,14 @@ extension EmotionalStatusView {
                 
                 Button(action: { viewModel.toggleEmotion(emotion) }) {
                     HStack {
-                        Text(emotion.icon).font(.title2)
-                        Text(emotion.rawValue).fontWeight(.semibold)
+                        Text(emotion.icon)
+                            .font(.title2)
+                        Text(emotion.localizedTitle)
+                            .fontWeight(.semibold)
+                            .font(.title3)
                     }
                     .frame(maxWidth: .infinity)
                     .frame(height: 60)
-                    // Theme Logic: Dark Navy if selected, White if not
                     .background(isSelected ? Color.minderDark : Color.white)
                     .foregroundColor(isSelected ? .white : .minderDark)
                     .cornerRadius(16)
@@ -100,6 +102,7 @@ extension EmotionalStatusView {
         }
         .padding(.horizontal)
     }
+
     
     var intensitySection: some View {
         VStack(alignment: .leading, spacing: 10) {
@@ -110,7 +113,7 @@ extension EmotionalStatusView {
                     let isSelected = viewModel.selectedIntensity == intensity
                     
                     Button(action: { viewModel.selectIntensity(intensity) }) {
-                        Text(intensity.rawValue)
+                        Text(intensity.localizedTitle)
                             .font(.subheadline)
                             .fontWeight(.medium)
                             .frame(maxWidth: .infinity)
@@ -142,14 +145,14 @@ extension EmotionalStatusView {
             Button(action: {
                 viewModel.saveEntry(context: modelContext)
             }) {
-                Text("CONFIRM ENTRY")
-                    .font(.headline)
+                Text("CONFIRM")
+                    .font(.title2)
                     .fontWeight(.bold)
                     .frame(maxWidth: .infinity)
                     .frame(height: 55)
                     .background(viewModel.isFormComplete ? Color.minderDark : Color.gray.opacity(0.3))
                     .foregroundColor(.white)
-                    .cornerRadius(16)
+                    .cornerRadius(43)
                     .shadow(radius: viewModel.isFormComplete ? 5 : 0)
             }
             .disabled(!viewModel.isFormComplete)
