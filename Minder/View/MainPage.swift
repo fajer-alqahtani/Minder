@@ -22,15 +22,15 @@ struct MainPage: View {
                         // Background card + overlays
                         RoundedRectangle(cornerRadius: 50)
                             .fill(Color.accentColor)
-                            .frame(width: 387, height: 340)
+                            .frame(width: 387, height: 160)
                         
                         // MinderM + Date under it
                             .overlay(alignment: .topLeading) {
                                 VStack(alignment: .leading, spacing: 8) {
-                                    Image("MinderMark")
+                                  /*  Image("MinderMark")
                                         .resizable()
                                         .aspectRatio(contentMode: .fit)
-                                        .frame(width: 50, height: 100)
+                                        .frame(width: 50, height: 100)*/
                                     
                                     Text(viewModel.formattedDate)
                                         .font(.title3)
