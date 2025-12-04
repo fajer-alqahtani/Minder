@@ -31,20 +31,20 @@ class MainPageViewModel: ObservableObject {
     }
 
     
-    var greeting: LocalizedStringKey {
-        let hour = Calendar.current.component(.hour, from: Date())
-
-        switch hour {
-        case 0..<12:
-            return "Good morning!"
-        case 12..<17:
-            return "Good afternoon!"
-        case 17..<22:
-            return "Good evening"
-        default:
-            return "Good night"
-        }
-    }
+//    var greeting: LocalizedStringKey {
+//        let hour = Calendar.current.component(.hour, from: Date())
+//
+//        switch hour {
+//        case 0..<12:
+//            return "Good morning!"
+//        case 12..<17:
+//            return "Good afternoon!"
+//        case 17..<22:
+//            return "Good evening"
+//        default:
+//            return "Good night"
+//        }
+//    }
 
 
 
