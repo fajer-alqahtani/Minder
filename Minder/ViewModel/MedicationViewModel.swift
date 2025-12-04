@@ -1,10 +1,3 @@
-//
-//  MedicationViewModel.swift
-//  Minder
-//
-//  Created by Areeg Altaiyah on 29/11/2025.
-//
-
 import Foundation
 import Combine
 import SwiftData
@@ -35,7 +28,13 @@ class MedicationViewModel {
         // Save to SwiftData
         modelContext.insert(medication)
         
-        print("✅ Saved to SwiftData: \(medication.name) - \(medication.dosage) pills - \(medication.timeOfDay?.rawValue ?? "No time")")
+        // CRITICAL: Explicitly save the context
+        do {
+            try modelContext.save()
+            print("✅ Saved to SwiftData: \(medication.name) - \(medication.dosage) pills - \(medication.timeOfDay?.rawValue ?? "No time")")
+        } catch {
+            print("❌ Failed to save medication: \(error.localizedDescription)")
+        }
 
         // Clear the form
         resetForm()
@@ -49,9 +48,5 @@ class MedicationViewModel {
         medicineName = ""
         dosage = 0
         selectedTime = nil
-    }
-    
-    func navigateBack() {
-        // Handle navigation back
     }
 }
