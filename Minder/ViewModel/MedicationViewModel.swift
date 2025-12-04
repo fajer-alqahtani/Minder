@@ -25,15 +25,27 @@ class MedicationViewModel {
             timeOfDay: selectedTime
         )
         
+        print("🔵 BEFORE INSERT - Creating medication: \(medication.name)")
+        
         // Save to SwiftData
         modelContext.insert(medication)
+        
+        print("🟡 AFTER INSERT - About to save...")
         
         // CRITICAL: Explicitly save the context
         do {
             try modelContext.save()
-            print("✅ Saved to SwiftData: \(medication.name) - \(medication.dosage) pills - \(medication.timeOfDay?.rawValue ?? "No time")")
+            print("✅ SAVE SUCCESS: \(medication.name) - \(medication.dosage) pills - \(medication.timeOfDay?.rawValue ?? "No time")")
+            
+            // Verify it's in the context
+            let descriptor = FetchDescriptor<Medication>()
+            let allMeds = try modelContext.fetch(descriptor)
+            print("📊 Total medications in context: \(allMeds.count)")
+            for med in allMeds {
+                print("   - \(med.name) (\(med.timeOfDay?.rawValue ?? "nil"))")
+            }
         } catch {
-            print("❌ Failed to save medication: \(error.localizedDescription)")
+            print("❌ SAVE FAILED: \(error.localizedDescription)")
         }
 
         // Clear the form

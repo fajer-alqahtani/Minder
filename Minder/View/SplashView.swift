@@ -96,7 +96,7 @@ struct SplashView: View {
         }
         .fullScreenCover(isPresented: $showMain) {
             MainPage()
-                .modelContainer(for: EmotionLog.self)
+                .modelContainer(for: [EmotionLog.self,Medication.self])
         }
     }
 }
@@ -104,6 +104,6 @@ struct SplashView: View {
 struct SplashView_Previews: PreviewProvider {
     static var previews: some View {
         SplashView()
-            .modelContainer(for: EmotionLog.self, inMemory: true)
+            .modelContainer(for: [EmotionLog.self,Medication.self], inMemory: true)
     }
 }
