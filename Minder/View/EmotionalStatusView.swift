@@ -20,13 +20,16 @@ struct EmotionalStatusView: View {
     
     // 2. Initialize ViewModel
     @State private var viewModel = EmotionalStatusViewModel()
+    
+    // NEW: State to control the Daily Summary Sheet
+    @State private var showDailySummary = false
 
     var body: some View {
         ZStack {
             Color.minderLight.edgesIgnoringSafeArea(.all)
 
             VStack(spacing: 0) {
-                // Header
+                // Header (now includes the chart button)
                 headerView
 
                 ScrollView {
@@ -54,22 +57,46 @@ struct EmotionalStatusView: View {
         .alert("Check-in Saved", isPresented: $viewModel.showSaveAlert) {
             Button("Done") { viewModel.resetForm() }
         }
+        // 👇 ADDED SHEET MODIFIER HERE
+        .sheet(isPresented: $showDailySummary) {
+            DailySummaryView() // Presents the daily chart view
+        }
     }
 }
 
 // MARK: - UI Components Breakdown
 extension EmotionalStatusView {
     
+    // UPDATED: Now includes the Chart Button
     var headerView: some View {
-        VStack(spacing: 6) {
-            Text("Daily Check-in")
-                .font(.subheadline)
-                .foregroundColor(.gray)
-            Text("How are they feeling?")
-                .font(.title2)
-                .fontWeight(.bold)
-                .foregroundColor(.minderDark)
+        HStack {
+            // Text on the left
+            VStack(alignment: .leading, spacing: 6) {
+                Text("Daily Check-in")
+                    .font(.subheadline)
+                    .foregroundColor(.gray)
+                Text("How are they feeling?")
+                    .font(.title2)
+                    .fontWeight(.bold)
+                    .foregroundColor(.minderDark)
+            }
+            
+            Spacer()
+            
+            // Chart Button on the right
+            Button(action: {
+                showDailySummary = true // Toggles the sheet
+            }) {
+                Image(systemName: "chart.pie.fill")
+                    .font(.title2)
+                    .foregroundColor(.minderDark)
+                    .padding(10)
+                    .background(Color.white)
+                    .clipShape(Circle())
+                    .shadow(color: .black.opacity(0.1), radius: 3)
+            }
         }
+        .padding(.horizontal, 20)
         .padding(.vertical, 20)
     }
     
@@ -80,14 +107,12 @@ extension EmotionalStatusView {
                 
                 Button(action: { viewModel.toggleEmotion(emotion) }) {
                     HStack {
-                        Text(emotion.icon)
-                            .font(.title2)
-                        Text(emotion.localizedTitle)
-                            .fontWeight(.semibold)
-                            .font(.title3)
+                        Text(emotion.icon).font(.title2)
+                        Text(emotion.rawValue).fontWeight(.semibold).font(.title3)
                     }
                     .frame(maxWidth: .infinity)
                     .frame(height: 60)
+                    // Theme Logic: Dark Navy if selected, White if not
                     .background(isSelected ? Color.minderDark : Color.white)
                     .foregroundColor(isSelected ? .white : .minderDark)
                     .cornerRadius(16)
@@ -102,7 +127,6 @@ extension EmotionalStatusView {
         }
         .padding(.horizontal)
     }
-
     
     var intensitySection: some View {
         VStack(alignment: .leading, spacing: 10) {
@@ -113,7 +137,7 @@ extension EmotionalStatusView {
                     let isSelected = viewModel.selectedIntensity == intensity
                     
                     Button(action: { viewModel.selectIntensity(intensity) }) {
-                        Text(intensity.localizedTitle)
+                        Text(intensity.rawValue)
                             .font(.subheadline)
                             .fontWeight(.medium)
                             .frame(maxWidth: .infinity)
@@ -131,7 +155,8 @@ extension EmotionalStatusView {
     }
     
     var noteSection: some View {
-        TextField("Add a quick note (optional)...", text: $viewModel.optionalNote)
+        TextField("Add a quick note (optional)...", text: $viewModel.optionalNote, axis: .vertical)
+            .lineLimit(1...5) // Allow it to expand slightly for longer notes
             .padding()
             .background(Color.white)
             .cornerRadius(12)
@@ -164,6 +189,6 @@ extension EmotionalStatusView {
 
 #Preview {
     EmotionalStatusView()
-        // CHANGE Item.self TO EmotionLog.self
+        // Ensure EmotionLog.self is used for the container
         .modelContainer(for: EmotionLog.self, inMemory: true)
 }
