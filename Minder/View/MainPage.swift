@@ -1,181 +1,255 @@
-//
-//  Untitled.swift
-//  Minder
-//
-//  Created by Sarah Khalid Almalki on 10/06/1447 AH.
-//
-
 import SwiftUI
-import Foundation
+import SwiftData
 
 struct MainPage: View {
-
     @StateObject private var viewModel = MainPageViewModel()
+    @State private var showMedications = true      // open by default (like the mock)
+    @Query private var medications: [Medication]
+    
+    // Group medications by time of day
+    private var morningMeds: [Medication] {
+        medications.filter { $0.timeOfDay == .morning }
+    }
+
+    private var nightMeds: [Medication] {
+        medications.filter { $0.timeOfDay == .night }
+    }
 
     var body: some View {
-        NavigationStack{
-            ZStack {
-                // MAIN CONTENT
-                VStack {
-                    ZStack(alignment: .topTrailing) {
+        NavigationStack {
+            ScrollView {
+                VStack(alignment: .leading, spacing: 24) {
+                    
+                    // MARK: - HEADER
+                    HStack(alignment: .top) {
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("Today's Record")
+                                .font(.largeTitle.bold())
+                                .foregroundColor(.ourDarkGrey)
+                            
+                            Text(viewModel.formattedDate)
+                                .font(.title3)
+                                .foregroundColor(.black.opacity(0.9))
+                        }
                         
-                        // Background card + overlays
-                        RoundedRectangle(cornerRadius: 50)
-                            .fill(Color.accentColor)
-                            .frame(width: 387, height: 340)
+                        Spacer()
                         
-                        // MinderM + Date under it
-                            .overlay(alignment: .topLeading) {
-                                VStack(alignment: .leading, spacing: 8) {
-                                    Image("MinderMark")
-                                        .resizable()
-                                        .aspectRatio(contentMode: .fit)
-                                        .frame(width: 50, height: 100)
-                                    
-                                    Text(viewModel.formattedDate)
-                                        .font(.title3)
-                                        .bold()
-                                        .foregroundColor(.white.opacity(0.9))
-                                    
-                                    // greeting
-                                    Text(viewModel.greeting)
-                                        .font(.title)
-                                        .foregroundColor(.ourDarkGrey)
-                                        .padding(.top,30)
-                                    Text("Let's start today's record.")
-                                        .font(.title)
-                                        .bold()
-                                        .foregroundColor(.ourDarkGrey)
-
-                                    
-                                }
-                                .padding(.leading, 20)
-                                .padding(.top, 50)
+                        // Top-right icon button 
+                        Button {
+                            print("Header icon tapped")
+                        } label: {
+                            NavigationLink(destination: SummaryView()) {
+                                Image(systemName: "text.line.3.summary")
+                                    .font(.system(size: 18, weight: .semibold))
+                                    .foregroundColor(.white)
+                                    .padding(10)
+                                    .background(
+                                        RoundedRectangle(cornerRadius: 10)
+                                            .fill(Color.ourDarkGrey)
+                                    )
                             }
-                        
+                            .buttonStyle(.plain)
+
+                        }
                     }
-                    .padding(.top, -70)
+                    .padding(.top, 8)
                     
-                    Spacer()
+                    // MARK: - MEDICATIONS CARD
+                    MedicationsCard(
+                        showMedications: $showMedications,
+                        medications: medications,
+                        morningMeds: morningMeds,
+                        nightMeds: nightMeds
+                    )
+                    
+                    // MARK: - MEALS CARD (layout only for now)
+                    MealsCard()
+                    
+                    // MARK: - EMOTIONAL STATUS CARD (layout only for now)
+                    EmotionalStatusCard()
+                    
+                    Spacer(minLength: 40)
                 }
-                .padding()
-                
-                VStack(spacing: 12) {
-                    NavigationLink(
-                        destination:
-                            MedicationView()
-                    ) {
-                        HStack(spacing: 12) {
-                            Image(systemName: "pills.fill")
-                                .font(.system(size: 20))
-
-                            Text("Medications")
-                                .font(.subheadline)
-                                .bold()
-                                .foregroundColor(.ourDarkGrey)
-
-                            Spacer()
-
-                            Image(systemName: "chevron.right")
-                                .font(.system(size: 14))
-                                .foregroundColor(.secondary)
-                        }
-                        .padding(.vertical, 26)
-                        .padding(.horizontal, 20)
-                        .background(
-                            RoundedRectangle(cornerRadius: 14)
-                                .fill(Color(.systemGray6))
-                        )
-                        .frame(width: 290)  // control rectangle width
-                    }
-                    .buttonStyle(.plain)
-                    .padding(.top, 240)
-                    
-                    NavigationLink(
-                        destination:
-                            Text("Meals Page") //  Just a placeholder, replace with MealsView() when available
-                    ) {
-                        HStack(spacing: 12) {
-                            Image(systemName: "fork.knife")
-                                .font(.system(size: 20))
-
-                            Text("Meals")
-                                .font(.subheadline)
-                                .bold()
-                                .foregroundColor(.ourDarkGrey)
-
-                            Spacer()
-
-                            Image(systemName: "chevron.right")
-                                .font(.system(size: 14))
-                                .foregroundColor(.secondary)
-                        }
-                        .padding(.vertical, 26)
-                        .padding(.horizontal, 20)
-                        .background(
-                            RoundedRectangle(cornerRadius: 14)
-                                .fill(Color(.systemGray6))
-                        )
-                        .frame(width: 290)
-                    }
-                    .buttonStyle(.plain)
-                    .padding(.top, 30)
-                    
-                    
-                    NavigationLink(
-                        destination:
-                            EmotionalStatusView()
-                    ) {
-                        HStack(spacing: 12) {
-                            Image(systemName: "heart.text.square.fill")
-                                .font(.system(size: 20))
-
-                            Text("Emotional Status")
-                                .font(.subheadline)
-                                .bold()
-                                .foregroundColor(.ourDarkGrey)
-
-                            Spacer()
-
-                            Image(systemName: "chevron.right")
-                                .font(.system(size: 14))
-                                .foregroundColor(.secondary)
-                        }
-                        .padding(.vertical, 26)
-                        .padding(.horizontal, 20)
-                        .background(
-                            RoundedRectangle(cornerRadius: 14)
-                                .fill(Color(.systemGray6))
-                        )
-                        .frame(width: 290)
-                    }
-                    .buttonStyle(.plain)
-                    .padding(.top, 30)
-                    
-                    NavigationLink(
-                        destination:
-                            Text("Summary Trial Page") //  Just a placeholder, replace with SummaryView() when available
-                    ) {
-                        Text("Summary")
-                            .font(Font.title)
-                            .foregroundColor(.white)
-                            .padding(.vertical, 14)
-                            .padding(.horizontal, 100)
-                            .background(Color(.ourGrey))
-                            .clipShape(Capsule())
-                    }
-                    .padding(.top, 80)
-                    .buttonStyle(.plain)
-
-                }
-                .padding(.top, 70)
-                
-                
+                .padding(.horizontal, 20)   // this makes card width ≈ 354 on most iPhones
+                .padding(.top, 32)
+                .padding(.bottom, 24)
+            }
+            .onAppear {
+                print("📱 MainPage appeared - Total medications: \(medications.count)")
+                print("🌅 Morning meds: \(morningMeds.count)")
+                print("🌙 Night meds: \(nightMeds.count)")
             }
         }
     }
 }
 
+// MARK: - MEDICATIONS CARD VIEW
+
+struct MedicationsCard: View {
+    @Binding var showMedications: Bool
+    let medications: [Medication]
+    let morningMeds: [Medication]
+    let nightMeds: [Medication]
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            
+            // Header row (pills icon + title + add + toggle)
+            HStack(spacing: 12) {
+                // Left icon (like in mock)
+                Image(systemName: "pills")
+                    .font(.system(size: 22))
+                
+                Text("Medications")
+                    .font(.headline)
+                    .foregroundColor(.ourDarkGrey)
+                
+                Spacer()
+                
+                // Add button (can be NavigationLink later)
+                NavigationLink(destination: MedicationView()) {
+                    Image(systemName: "plus")
+                        .font(.system(size: 20, weight: .semibold))
+                        .foregroundColor(.ourDarkGrey)
+                }
+                
+                // Collapse/expand chevron (optional)
+                Button {
+                    withAnimation(.spring(response: 0.35, dampingFraction: 0.85)) {
+                        showMedications.toggle()
+                    }
+                } label: {
+                    Image(systemName: showMedications ? "chevron.up" : "chevron.down")
+                        .font(.system(size: 14))
+                        .foregroundColor(.secondary)
+                        .padding(.leading, 4)
+                }
+            }
+            
+            if showMedications {
+                // Content (placeholder: your Morning/Night grids)
+                VStack(alignment: .leading, spacing: 16) {
+                    
+                    if !morningMeds.isEmpty {
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("Morning")
+                                .font(.subheadline.weight(.semibold))
+                                .foregroundColor(.secondary)
+                            
+                            LazyVGrid(columns: [
+                                GridItem(.flexible(), spacing: 8),
+                                GridItem(.flexible(), spacing: 8)
+                            ], spacing: 8) {
+                                ForEach(morningMeds) { medication in
+                                    MedicationCard(medication: medication)
+                                }
+                            }
+                        }
+                    }
+                    
+                    if !nightMeds.isEmpty {
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("Night")
+                                .font(.subheadline.weight(.semibold))
+                                .foregroundColor(.secondary)
+                            
+                            LazyVGrid(columns: [
+                                GridItem(.flexible(), spacing: 8),
+                                GridItem(.flexible(), spacing: 8)
+                            ], spacing: 8) {
+                                ForEach(nightMeds) { medication in
+                                    MedicationCard(medication: medication)
+                                }
+                            }
+                        }
+                    }
+                    
+                    if medications.isEmpty {
+                        VStack(spacing: 12) {
+                            Image(systemName: "pills.circle")
+                                .font(.system(size: 40))
+                                .foregroundColor(.secondary)
+                            
+                            Text("No medications added yet")
+                                .font(.subheadline)
+                                .foregroundColor(.secondary)
+                        }
+                        .frame(maxWidth: .infinity, alignment: .center)
+                        .padding(.vertical, 24)
+                    }
+                }
+                .transition(.opacity.combined(with: .move(edge: .top)))
+            }
+        }
+        .padding(20)
+        .background(
+            RoundedRectangle(cornerRadius: 32)
+                .fill(Color(.systemGray6))
+        )
+        // This makes the card “≈354 x 211” when content is small,
+        // and lets it grow naturally when there are many items.
+        .frame(maxWidth: .infinity, minHeight: 211, alignment: .topLeading)
+    }
+}
+
+// MARK: - MEALS CARD
+
+struct MealsCard: View {
+    var body: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            HStack(spacing: 12) {
+                Image(systemName: "fork.knife")
+                    .font(.system(size: 22))
+                
+                Text("Meals")
+                    .font(.headline)
+                    .foregroundColor(.ourDarkGrey)
+                
+                Spacer()
+            }
+        }
+        .padding(.horizontal, 20)
+        .padding(.vertical, 16)
+        .background(
+            RoundedRectangle(cornerRadius: 32)
+                .fill(Color(.systemGray6))
+        )
+        .frame(maxWidth: .infinity, minHeight: 90, alignment: .center) // 👈 shorter
+    }
+}
+
+
+
+// MARK: - EMOTIONAL STATUS CARD
+
+struct EmotionalStatusCard: View {
+    var body: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            HStack(spacing: 12) {
+                Image(systemName: "heart.text.square.fill")
+                    .font(.system(size: 22))
+                
+                Text("Emotional Status")
+                    .font(.headline)
+                    .foregroundColor(.ourDarkGrey)
+                
+                Spacer()
+            }
+        }
+        .padding(.horizontal, 20)
+        .padding(.vertical, 16)
+        .background(
+            RoundedRectangle(cornerRadius: 32)
+                .fill(Color(.systemGray6))
+        )
+        .frame(maxWidth: .infinity, minHeight: 90, alignment: .center)
+    }
+}
+
+
+
+
 #Preview {
     MainPage()
+        .modelContainer(for: Medication.self, inMemory: true)
 }
