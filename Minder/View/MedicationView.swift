@@ -1,4 +1,4 @@
-//
+///
 //  MedicationView.swift
 //  Minder
 //
@@ -37,11 +37,16 @@ struct MedicationView: View {
                                         get: { viewModel.selectedTime },
                                         set: { viewModel.selectedTime = $0 }
                                     ),
+                                    selectedTimes: Binding(
+                                        get: { viewModel.selectedTimes },
+                                        set: { viewModel.selectedTimes = $0 }
+                                    ),
                                     dosage: Binding(
                                         get: { viewModel.dosage },
                                         set: { viewModel.dosage = $0 }
                                     ),
-                                    onSelect: viewModel.selectTime
+                                    onSelect: viewModel.selectTime,
+                                    onSelectForDosage: viewModel.selectTimeForDosage
                                 )
                             }
                             .padding(.bottom, 20)
@@ -121,9 +126,10 @@ struct MedicineDosageControl: View {
 
 struct MedicineTimeSelector: View {
     @Binding var selectedTime: TimeOfDay?
+    @Binding var selectedTimes: [TimeOfDay?]
     @Binding var dosage: Int
-    @State private var selectedTimes: [TimeOfDay?] = []
     let onSelect: (TimeOfDay) -> Void
+    let onSelectForDosage: (Int, TimeOfDay) -> Void
     
     var body: some View {
         VStack(alignment: .leading, spacing: 15) {
@@ -147,7 +153,7 @@ struct MedicineTimeSelector: View {
                                 iconColor: .yellow,
                                 isSelected: index < selectedTimes.count && selectedTimes[index] == .morning
                             ) {
-                                selectTimeForDosage(index: index, time: .morning)
+                                onSelectForDosage(index, .morning)
                             }
                             
                             Spacer()
@@ -158,7 +164,7 @@ struct MedicineTimeSelector: View {
                                 iconColor: .accentColor,
                                 isSelected: index < selectedTimes.count && selectedTimes[index] == .night
                             ) {
-                                selectTimeForDosage(index: index, time: .night)
+                                onSelectForDosage(index, .night)
                             }
                         }
                         .padding(.horizontal, 25)
@@ -195,15 +201,10 @@ struct MedicineTimeSelector: View {
             // Initialize selectedTimes array when dosage changes
             if newValue >= 2 {
                 selectedTimes = Array(repeating: nil, count: newValue)
+            } else {
+                selectedTimes = []
             }
         }
-    }
-    
-    private func selectTimeForDosage(index: Int, time: TimeOfDay) {
-        while selectedTimes.count <= index {
-            selectedTimes.append(nil)
-        }
-        selectedTimes[index] = time
     }
     
     // Helper function to convert numbers to ordinal text
@@ -266,5 +267,5 @@ struct ConfirmButton: View {
 
 #Preview {
     MedicationView()
-        .modelContainer(for: Medication.self)
+        .modelContainer(for: Medication.self, inMemory: true)
 }

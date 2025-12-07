@@ -22,15 +22,16 @@ final class Medication {
     var id: UUID
     var name: String
     var dosage: Int
-    var timeOfDay: TimeOfDay?
+    var timeOfDay: TimeOfDay?  // For single dose (dosage = 1)
+    var dosageTimes: [TimeOfDay]  // For multiple doses (dosage >= 2)
     var timestamp: Date
 
-    init(name: String, dosage: Int, timeOfDay: TimeOfDay? = nil) {
+    init(name: String, dosage: Int, timeOfDay: TimeOfDay? = nil, dosageTimes: [TimeOfDay] = []) {
         self.id = UUID()
         self.name = name
         self.dosage = dosage
         self.timeOfDay = timeOfDay
+        self.dosageTimes = dosageTimes
         self.timestamp = Date()
-
     }
 }
