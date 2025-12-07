@@ -43,11 +43,9 @@ struct SummaryView: View {
     // MARK: - Header
     private var headerSection: some View {
         VStack(spacing: 12) {
+
+            // زر السcreenshot في اليمين
             HStack {
-                Button { } label: {
-                    Image(systemName: "chevron.left")
-                        .foregroundColor(Color("ourGrey"))
-                }
                 Spacer()
                 Button {
                     saveSnapshot()
@@ -152,12 +150,10 @@ struct SummaryView: View {
                 ForEach(viewModel.mealsWeek.indices, id: \.self) { index in
                     VStack(spacing: 6) {
 
-                        // اسم اليوم
                         Text(weekDays[index])
                             .font(.caption2)
                             .foregroundColor(Color("ourGrey").opacity(0.7))
 
-                        // الدائرة
                         ZStack {
                             if viewModel.mealsWeek[index].isCompleted {
                                 Circle()
@@ -205,8 +201,8 @@ struct SummaryView: View {
                             Image(systemName: section.iconName)
                                 .foregroundColor(
                                     section.period == .morning
-                                    ? Color("ourYellow")   // ☀️ yellow
-                                    : Color("ourGrey")     // 🌙 grey
+                                    ? Color("ourYellow")
+                                    : Color("ourGrey")
                                 )
                             
                             Text(section.period.rawValue)
@@ -242,10 +238,9 @@ struct SummaryView: View {
         .shadow(color: Color.black.opacity(0.04), radius: 8, x: 0, y: 4)
     }
 
-    // MARK: - Save as Image
+    // MARK: - Save as Image (full window snapshot)
     @MainActor
     private func saveSnapshot() {
-        // نجيب الويندو اللي عليها الاب شغال
         guard
             let scene = UIApplication.shared.connectedScenes
                 .first(where: { $0.activationState == .foregroundActive }) as? UIWindowScene,
@@ -257,33 +252,26 @@ struct SummaryView: View {
 
         let bounds = window.bounds
 
-        // نرندر الويندو كاملة كصورة
-        let renderer = UIGraphicsImageRenderer(size: bounds.size)
-        let image = renderer.image { _ in
-            window.drawHierarchy(in: bounds, afterScreenUpdates: true)
+        let renderer = UIGraphicsImageRenderer(bounds: bounds)
+        let image = renderer.image { context in
+            window.layer.render(in: context.cgContext)
         }
 
-        // نحفظ الصورة في الألبوم
         UIImageWriteToSavedPhotosAlbum(image, nil, nil, nil)
         showSaveAlert = true
     }
-
-    }
+}
 
 
 // MARK: - DonutChart
 struct DonutChart: View {
     let emotionalStatus: EmotionalStatusSummary   // value + label + categories
 
-    // Relative weight for each emotion (Joyful, Saddness, Angry)
     private let rawValues: [Double] = [0.4, 0.30, 0.25]
-
-    // How big the gap is between each arc (0.02 = 2% of the circle)
     private let gap: Double = 0.02
 
     var body: some View {
         ZStack {
-            // Draw one arc per emotion
             ForEach(emotionalStatus.categories.indices, id: \.self) { index in
                 let range = trimRange(for: index)
 
@@ -293,10 +281,9 @@ struct DonutChart: View {
                         emotionalStatus.categories[index].color,
                         style: StrokeStyle(lineWidth: 20, lineCap: .round)
                     )
-                    .rotationEffect(.degrees(-90))  // start at the top
+                    .rotationEffect(.degrees(-90))
             }
 
-            // Center label
             VStack(spacing: 4) {
                 Text("\(Int(emotionalStatus.value * 100))%")
                     .font(.largeTitle)
@@ -311,13 +298,10 @@ struct DonutChart: View {
         .frame(width: 170, height: 200)
     }
 
-    // MARK: - Helpers to add SPACE between arcs
-
     private var scaledSegments: [Double] {
         let total = rawValues.reduce(0, +)
         let totalGap = gap * Double(rawValues.count)
         let scale = (1.0 - totalGap) / total
-
         return rawValues.map { $0 * scale }
     }
 
