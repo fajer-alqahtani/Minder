@@ -52,7 +52,7 @@ struct MainPage: View {
 
                         }
                     }
-                    .padding(.top, 8)
+                    .padding(.top, 1)
                     
                     // MARK: - MEDICATIONS CARD
                     MedicationsCard(
