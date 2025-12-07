@@ -31,22 +31,11 @@ struct SummaryView: View {
     var body: some View {
         NavigationView {
             content
-                .navigationBarHidden(true)
+                .navigationTitle("")                      // ما نبي عنوان نصي
+                .navigationBarTitleDisplayMode(.inline)    // ستايل الهيدر
         }
-        .alert("Saved to Photos", isPresented: $showSaveAlert) {
-            Button("OK", role: .cancel) { }
-        } message: {
-            Text("Your care overview has been saved as an image.")
-        }
-    }
-    
-    // MARK: - Header
-    private var headerSection: some View {
-        VStack(spacing: 12) {
-
-            // زر السcreenshot في اليمين
-            HStack {
-                Spacer()
+        .toolbar {
+            ToolbarItem(placement: .navigationBarTrailing) {
                 Button {
                     saveSnapshot()
                 } label: {
@@ -54,6 +43,29 @@ struct SummaryView: View {
                         .foregroundColor(Color("ourGrey"))
                 }
             }
+        }
+        .alert("Saved to Photos", isPresented: $showSaveAlert) {
+            Button("OK", role: .cancel) { }
+        } message: {
+            Text("Your care overview has been saved as an image.")
+        }
+    }
+
+    // MARK: - Header
+    private var headerSection: some View {
+        VStack(spacing: 12) {
+
+//            // زر السcreenshot في اليمين
+//            HStack {
+//                Spacer()
+//                Button {
+//                    saveSnapshot()
+//                } label: {
+//                    Image(systemName: "square.and.arrow.down")
+//                        .foregroundColor(Color("ourGrey"))
+//                        
+//                }
+//            }
 
             Text(viewModel.title)
                 .font(.title2)

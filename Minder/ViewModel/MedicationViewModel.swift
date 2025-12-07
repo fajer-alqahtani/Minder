@@ -7,6 +7,7 @@ class MedicationViewModel {
     var medicineName: String = ""
     var dosage: Int = 0
     var selectedTime: TimeOfDay? = nil
+    var selectedTimes: [TimeOfDay?] = []  // For multiple doses
     
     private var modelContext: ModelContext
     
@@ -15,15 +16,36 @@ class MedicationViewModel {
     }
     
     var isConfirmEnabled: Bool {
-        !medicineName.isEmpty && dosage > 0 && selectedTime != nil
+        if dosage < 2 {
+            // Single dose: check if name, dosage, and time are set
+            return !medicineName.isEmpty && dosage > 0 && selectedTime != nil
+        } else {
+            // Multiple doses: check if all times are selected
+            return !medicineName.isEmpty && dosage > 0 && 
+                   selectedTimes.count == dosage && 
+                   selectedTimes.allSatisfy { $0 != nil }
+        }
     }
     
     func confirmMedication() {
-        let medication = Medication(
-            name: medicineName,
-            dosage: dosage,
-            timeOfDay: selectedTime
-        )
+        let medication: Medication
+        
+        if dosage < 2 {
+            // Single dose
+            medication = Medication(
+                name: medicineName,
+                dosage: dosage,
+                timeOfDay: selectedTime
+            )
+        } else {
+            // Multiple doses
+            let times = selectedTimes.compactMap { $0 }
+            medication = Medication(
+                name: medicineName,
+                dosage: dosage,
+                dosageTimes: times
+            )
+        }
         
         print("🔵 BEFORE INSERT - Creating medication: \(medication.name)")
         
@@ -35,14 +57,24 @@ class MedicationViewModel {
         // CRITICAL: Explicitly save the context
         do {
             try modelContext.save()
-            print("✅ SAVE SUCCESS: \(medication.name) - \(medication.dosage) pills - \(medication.timeOfDay?.rawValue ?? "No time")")
+            if dosage < 2 {
+                print("✅ SAVE SUCCESS: \(medication.name) - \(medication.dosage) pill - \(medication.timeOfDay?.rawValue ?? "No time")")
+            } else {
+                let timesStr = medication.dosageTimes.map { $0.rawValue }.joined(separator: ", ")
+                print("✅ SAVE SUCCESS: \(medication.name) - \(medication.dosage) pills - Times: \(timesStr)")
+            }
             
             // Verify it's in the context
             let descriptor = FetchDescriptor<Medication>()
             let allMeds = try modelContext.fetch(descriptor)
             print("📊 Total medications in context: \(allMeds.count)")
             for med in allMeds {
-                print("   - \(med.name) (\(med.timeOfDay?.rawValue ?? "nil"))")
+                if med.dosage < 2 {
+                    print("   - \(med.name) (\(med.timeOfDay?.rawValue ?? "nil"))")
+                } else {
+                    let times = med.dosageTimes.map { $0.rawValue }.joined(separator: ", ")
+                    print("   - \(med.name) (Times: \(times))")
+                }
             }
         } catch {
             print("❌ SAVE FAILED: \(error.localizedDescription)")
@@ -56,9 +88,17 @@ class MedicationViewModel {
         selectedTime = time
     }
     
+    func selectTimeForDosage(index: Int, time: TimeOfDay) {
+        while selectedTimes.count <= index {
+            selectedTimes.append(nil)
+        }
+        selectedTimes[index] = time
+    }
+    
     func resetForm() {
         medicineName = ""
         dosage = 0
         selectedTime = nil
+        selectedTimes = []
     }
 }

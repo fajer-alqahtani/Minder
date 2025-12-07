@@ -8,11 +8,23 @@ struct MainPage: View {
     
     // Group medications by time of day
     private var morningMeds: [Medication] {
-        medications.filter { $0.timeOfDay == .morning }
+        medications.filter { medication in
+            if medication.dosage < 2 {
+                return medication.timeOfDay == .morning
+            } else {
+                return medication.dosageTimes.contains(.morning)
+            }
+        }
     }
 
     private var nightMeds: [Medication] {
-        medications.filter { $0.timeOfDay == .night }
+        medications.filter { medication in
+            if medication.dosage < 2 {
+                return medication.timeOfDay == .night
+            } else {
+                return medication.dosageTimes.contains(.night)
+            }
+        }
     }
 
     var body: some View {
@@ -29,18 +41,17 @@ struct MainPage: View {
                             
                             Text(viewModel.formattedDate)
                                 .font(.title3)
-                                .foregroundColor(.black.opacity(0.9))
+                                .foregroundColor(.ourDarkGrey)
                         }
                         
                         Spacer()
                         
-                        // Top-right icon button 
+                        // Top-right icon button
                         Button {
                             print("Header icon tapped")
                         } label: {
                             NavigationLink(destination: SummaryView()) {
                                 Image(systemName: "text.line.3.summary")
-                                    .font(.system(size: 18, weight: .semibold))
                                     .foregroundColor(.white)
                                     .padding(10)
                                     .background(
@@ -76,6 +87,14 @@ struct MainPage: View {
             }
             .onAppear {
                 print("📱 MainPage appeared - Total medications: \(medications.count)")
+                for med in medications {
+                    if med.dosage < 2 {
+                        print("   - \(med.name): \(med.dosage) pill, time: \(med.timeOfDay?.rawValue ?? "nil")")
+                    } else {
+                        let times = med.dosageTimes.map { $0.rawValue }.joined(separator: ", ")
+                        print("   - \(med.name): \(med.dosage) pills, times: [\(times)]")
+                    }
+                }
                 print("🌅 Morning meds: \(morningMeds.count)")
                 print("🌙 Night meds: \(nightMeds.count)")
             }
@@ -99,6 +118,7 @@ struct MedicationsCard: View {
                 // Left icon (like in mock)
                 Image(systemName: "pills")
                     .font(.system(size: 22))
+                    .foregroundColor(.ourDarkGrey)
                 
                 Text("Medications")
                     .font(.headline)
@@ -127,7 +147,7 @@ struct MedicationsCard: View {
             }
             
             if showMedications {
-                // Content (placeholder: your Morning/Night grids)
+                // Content
                 VStack(alignment: .leading, spacing: 16) {
                     
                     if !morningMeds.isEmpty {
@@ -136,12 +156,9 @@ struct MedicationsCard: View {
                                 .font(.subheadline.weight(.semibold))
                                 .foregroundColor(.secondary)
                             
-                            LazyVGrid(columns: [
-                                GridItem(.flexible(), spacing: 8),
-                                GridItem(.flexible(), spacing: 8)
-                            ], spacing: 8) {
+                            VStack(spacing: 8) {
                                 ForEach(morningMeds) { medication in
-                                    MedicationCard(medication: medication)
+                                    MedicationCard(medication: medication, displayTime: .morning)
                                 }
                             }
                         }
@@ -153,12 +170,9 @@ struct MedicationsCard: View {
                                 .font(.subheadline.weight(.semibold))
                                 .foregroundColor(.secondary)
                             
-                            LazyVGrid(columns: [
-                                GridItem(.flexible(), spacing: 8),
-                                GridItem(.flexible(), spacing: 8)
-                            ], spacing: 8) {
+                            VStack(spacing: 8) {
                                 ForEach(nightMeds) { medication in
-                                    MedicationCard(medication: medication)
+                                    MedicationCard(medication: medication, displayTime: .night)
                                 }
                             }
                         }
@@ -186,7 +200,7 @@ struct MedicationsCard: View {
             RoundedRectangle(cornerRadius: 32)
                 .fill(Color(.systemGray6))
         )
-        // This makes the card “≈354 x 211” when content is small,
+        // This makes the card "≈354 x 211" when content is small,
         // and lets it grow naturally when there are many items.
         .frame(maxWidth: .infinity, minHeight: 211, alignment: .topLeading)
     }
@@ -200,6 +214,7 @@ struct MealsCard: View {
             HStack(spacing: 12) {
                 Image(systemName: "fork.knife")
                     .font(.system(size: 22))
+                    .foregroundColor(.ourDarkGrey)
                 
                 Text("Meals")
                     .font(.headline)
@@ -214,7 +229,7 @@ struct MealsCard: View {
             RoundedRectangle(cornerRadius: 32)
                 .fill(Color(.systemGray6))
         )
-        .frame(maxWidth: .infinity, minHeight: 90, alignment: .center) // 👈 shorter
+        .frame(maxWidth: .infinity, minHeight: 90, alignment: .center)
     }
 }
 
@@ -228,6 +243,7 @@ struct EmotionalStatusCard: View {
             HStack(spacing: 12) {
                 Image(systemName: "heart.text.square.fill")
                     .font(.system(size: 22))
+                    .foregroundColor(.ourDarkGrey)
                 
                 Text("Emotional Status")
                     .font(.headline)

@@ -1,4 +1,4 @@
-//
+///
 //  MedicationView.swift
 //  Minder
 //
@@ -20,34 +20,45 @@ struct MedicationView: View {
             Group {
                 if let viewModel {
                     VStack {
-                        Spacer()
-                        VStack {
-                            MedicineNameField(name: Binding(
-                                get: { viewModel.medicineName },
-                                set: { viewModel.medicineName = $0 }
-                            ))
-                            
-                            MedicineDosageControl(dosage: Binding(
-                                get: { viewModel.dosage },
-                                set: { viewModel.dosage = $0 }
-                            ))
-                            MedicineTimeSelector(
-                                selectedTime: Binding(
-                                    get: { viewModel.selectedTime },
-                                    set: { viewModel.selectedTime = $0 }
-                                ),
-                                onSelect: viewModel.selectTime
-                            )
+                        ScrollView {
+                            VStack {
+                                MedicineNameField(name: Binding(
+                                    get: { viewModel.medicineName },
+                                    set: { viewModel.medicineName = $0 }
+                                ))
+                                
+                                MedicineDosageControl(dosage: Binding(
+                                    get: { viewModel.dosage },
+                                    set: { viewModel.dosage = $0 }
+                                ))
+                                
+                                MedicineTimeSelector(
+                                    selectedTime: Binding(
+                                        get: { viewModel.selectedTime },
+                                        set: { viewModel.selectedTime = $0 }
+                                    ),
+                                    selectedTimes: Binding(
+                                        get: { viewModel.selectedTimes },
+                                        set: { viewModel.selectedTimes = $0 }
+                                    ),
+                                    dosage: Binding(
+                                        get: { viewModel.dosage },
+                                        set: { viewModel.dosage = $0 }
+                                    ),
+                                    onSelect: viewModel.selectTime,
+                                    onSelectForDosage: viewModel.selectTimeForDosage
+                                )
+                            }
+                            .padding(.bottom, 20)
                         }
-                        .padding(.bottom,60)
-
-                        Spacer()
+                        
                         ConfirmButton(
                             isEnabled: viewModel.isConfirmEnabled,
                             action: {
                                 showConfirmAlert = true
                             }
                         )
+                        .padding(.bottom, 10)
                     }
                     .padding(25)
                     
@@ -115,35 +126,92 @@ struct MedicineDosageControl: View {
 
 struct MedicineTimeSelector: View {
     @Binding var selectedTime: TimeOfDay?
+    @Binding var selectedTimes: [TimeOfDay?]
+    @Binding var dosage: Int
     let onSelect: (TimeOfDay) -> Void
+    let onSelectForDosage: (Int, TimeOfDay) -> Void
     
     var body: some View {
-        VStack(alignment: .leading) {
-            Text("Time").font(.title3).bold()
-            
-            HStack {
-                TimeButton(
-                    title: TimeOfDay.morning.localizedTitle,
-                    icon: "sun.max.fill",
-                    iconColor: .yellow,
-                    isSelected: selectedTime == .morning
-                ) {
-                    onSelect(.morning)
-                }
-                
-                Spacer()
-                
-                TimeButton(
-                    title: TimeOfDay.night.localizedTitle,
-                    icon: "moon.fill",
-                    iconColor: .accentColor,
-                    isSelected: selectedTime == .night
-                ) {
-                    onSelect(.night)
-                }
+        VStack(alignment: .leading, spacing: 15) {
+            // Only show "Time" title when dosage is 1
+            if dosage < 2 {
+                Text("Time").font(.title3).bold()
             }
-            .padding(.horizontal, 25)
+            
+            if dosage >= 2 {
+                // Show multiple time selectors for each dose
+                ForEach(0..<dosage, id: \.self) { index in
+                    VStack(alignment: .leading, spacing: 10) {
+                        Text("\(ordinalText(for: index + 1)) Dosage Time")
+                            .font(.title3)
+                            .fontWeight(.semibold)
+                        
+                        HStack {
+                            TimeButton(
+                                title: TimeOfDay.morning.localizedTitle,
+                                icon: "sun.max.fill",
+                                iconColor: .yellow,
+                                isSelected: index < selectedTimes.count && selectedTimes[index] == .morning
+                            ) {
+                                onSelectForDosage(index, .morning)
+                            }
+                            
+                            Spacer()
+                            
+                            TimeButton(
+                                title: TimeOfDay.night.localizedTitle,
+                                icon: "moon.fill",
+                                iconColor: .accentColor,
+                                isSelected: index < selectedTimes.count && selectedTimes[index] == .night
+                            ) {
+                                onSelectForDosage(index, .night)
+                            }
+                        }
+                        .padding(.horizontal, 25)
+                    }
+                    .padding(.bottom, 10)
+                }
+            } else {
+                // Show original single time selector for dosage = 1
+                HStack {
+                    TimeButton(
+                        title: TimeOfDay.morning.localizedTitle,
+                        icon: "sun.max.fill",
+                        iconColor: .yellow,
+                        isSelected: selectedTime == .morning
+                    ) {
+                        onSelect(.morning)
+                    }
+                    
+                    Spacer()
+                    
+                    TimeButton(
+                        title: TimeOfDay.night.localizedTitle,
+                        icon: "moon.fill",
+                        iconColor: .accentColor,
+                        isSelected: selectedTime == .night
+                    ) {
+                        onSelect(.night)
+                    }
+                }
+                .padding(.horizontal, 25)
+            }
         }
+        .onChange(of: dosage) { oldValue, newValue in
+            // Initialize selectedTimes array when dosage changes
+            if newValue >= 2 {
+                selectedTimes = Array(repeating: nil, count: newValue)
+            } else {
+                selectedTimes = []
+            }
+        }
+    }
+    
+    // Helper function to convert numbers to ordinal text
+    private func ordinalText(for number: Int) -> String {
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .ordinal
+        return formatter.string(from: NSNumber(value: number)) ?? "\(number)"
     }
 }
 
@@ -199,6 +267,5 @@ struct ConfirmButton: View {
 
 #Preview {
     MedicationView()
-        .modelContainer(for: Medication.self)
+        .modelContainer(for: Medication.self, inMemory: true)
 }
-
