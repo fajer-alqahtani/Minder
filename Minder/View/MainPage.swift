@@ -113,17 +113,17 @@ struct MedicationsCard: View {
                         .foregroundColor(.ourDarkGrey)
                 }
                 
-                // Collapse/expand chevron (optional)
-                Button {
-                    withAnimation(.spring(response: 0.35, dampingFraction: 0.85)) {
-                        showMedications.toggle()
-                    }
-                } label: {
-                    Image(systemName: showMedications ? "chevron.up" : "chevron.down")
-                        .font(.system(size: 14))
-                        .foregroundColor(.secondary)
-                        .padding(.leading, 4)
-                }
+//                // Collapse/expand chevron (optional)
+//                Button {
+//                    withAnimation(.spring(response: 0.35, dampingFraction: 0.85)) {
+//                        showMedications.toggle()
+//                    }
+//                } label: {
+//                    Image(systemName: showMedications ? "chevron.up" : "chevron.down")
+//                        .font(.system(size: 14))
+//                        .foregroundColor(.secondary)
+//                        .padding(.leading, 4)
+//                }
             }
             
             if showMedications {
