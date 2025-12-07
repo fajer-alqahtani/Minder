@@ -48,11 +48,4 @@ class MainPageViewModel: ObservableObject {
 
 
 
-    func didTapSettings() {
-        isShowingSettings = true
-    }
-
-    func closeSettings() {
-        isShowingSettings = false
-    }
 }
