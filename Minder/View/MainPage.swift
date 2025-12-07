@@ -41,7 +41,7 @@ struct MainPage: View {
                             
                             Text(viewModel.formattedDate)
                                 .font(.title3)
-                                .foregroundColor(.black.opacity(0.9))
+                                .foregroundColor(.ourDarkGrey)
                         }
                         
                         Spacer()
@@ -52,7 +52,6 @@ struct MainPage: View {
                         } label: {
                             NavigationLink(destination: SummaryView()) {
                                 Image(systemName: "text.line.3.summary")
-                                    .font(.system(size: 18, weight: .semibold))
                                     .foregroundColor(.white)
                                     .padding(10)
                                     .background(
@@ -119,6 +118,7 @@ struct MedicationsCard: View {
                 // Left icon (like in mock)
                 Image(systemName: "pills")
                     .font(.system(size: 22))
+                    .foregroundColor(.ourDarkGrey)
                 
                 Text("Medications")
                     .font(.headline)
@@ -214,6 +214,7 @@ struct MealsCard: View {
             HStack(spacing: 12) {
                 Image(systemName: "fork.knife")
                     .font(.system(size: 22))
+                    .foregroundColor(.ourDarkGrey)
                 
                 Text("Meals")
                     .font(.headline)
@@ -242,6 +243,7 @@ struct EmotionalStatusCard: View {
             HStack(spacing: 12) {
                 Image(systemName: "heart.text.square.fill")
                     .font(.system(size: 22))
+                    .foregroundColor(.ourDarkGrey)
                 
                 Text("Emotional Status")
                     .font(.headline)
