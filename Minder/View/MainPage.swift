@@ -73,15 +73,15 @@ struct MainPage: View {
                         nightMeds: nightMeds
                     )
                     
-                    // MARK: - MEALS CARD (layout only for now)
+                    // MARK: - MEALS CARD
                     MealsCard()
                     
-                    // MARK: - EMOTIONAL STATUS CARD (layout only for now)
+                    // MARK: - EMOTIONAL STATUS CARD  ✅ updated
                     EmotionalStatusCard()
                     
                     Spacer(minLength: 40)
                 }
-                .padding(.horizontal, 20)   // this makes card width ≈ 354 on most iPhones
+                .padding(.horizontal, 20)
                 .padding(.top, 32)
                 .padding(.bottom, 24)
             }
@@ -113,9 +113,8 @@ struct MedicationsCard: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
             
-            // Header row (pills icon + title + add + toggle)
+            // Header row
             HStack(spacing: 12) {
-                // Left icon (like in mock)
                 Image(systemName: "pills")
                     .font(.system(size: 22))
                     .foregroundColor(.ourDarkGrey)
@@ -126,28 +125,14 @@ struct MedicationsCard: View {
                 
                 Spacer()
                 
-                // Add button (can be NavigationLink later)
                 NavigationLink(destination: MedicationView()) {
                     Image(systemName: "plus")
                         .font(.system(size: 20, weight: .semibold))
                         .foregroundColor(.ourDarkGrey)
                 }
-                
-//                // Collapse/expand chevron (optional)
-//                Button {
-//                    withAnimation(.spring(response: 0.35, dampingFraction: 0.85)) {
-//                        showMedications.toggle()
-//                    }
-//                } label: {
-//                    Image(systemName: showMedications ? "chevron.up" : "chevron.down")
-//                        .font(.system(size: 14))
-//                        .foregroundColor(.secondary)
-//                        .padding(.leading, 4)
-//                }
             }
             
             if showMedications {
-                // Content
                 VStack(alignment: .leading, spacing: 16) {
                     
                     if !morningMeds.isEmpty {
@@ -200,8 +185,6 @@ struct MedicationsCard: View {
             RoundedRectangle(cornerRadius: 32)
                 .fill(Color(.systemGray6))
         )
-        // This makes the card "≈354 x 211" when content is small,
-        // and lets it grow naturally when there are many items.
         .frame(maxWidth: .infinity, minHeight: 211, alignment: .topLeading)
     }
 }
@@ -233,13 +216,21 @@ struct MealsCard: View {
     }
 }
 
-
-
-// MARK: - EMOTIONAL STATUS CARD
+// MARK: - EMOTIONAL STATUS CARD  ✅ uses Emotion + ViewModel
 
 struct EmotionalStatusCard: View {
+    // Local view model so the chips behave like in EmotionalStatusView
+    @State private var viewModel = EmotionalStatusViewModel()
+    
+    // 2-column layout similar to your full emotional screen
+    private let columns = [
+        GridItem(.flexible(), spacing: 10),
+        GridItem(.flexible(), spacing: 10)
+    ]
+    
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
+            // Header
             HStack(spacing: 12) {
                 Image(systemName: "heart.text.square.fill")
                     .font(.system(size: 22))
@@ -251,6 +242,42 @@ struct EmotionalStatusCard: View {
                 
                 Spacer()
             }
+            
+            Text("How is the patient feeling today?")
+                .font(.subheadline)
+                .foregroundColor(.secondary)
+            
+            // Emotion chips – same logic as in EmotionalStatusView
+            LazyVGrid(columns: columns, spacing: 10) {
+                ForEach(Emotion.allCases, id: \.self) { emotion in
+                    let isSelected = viewModel.selectedEmotions.contains(emotion)
+                    
+                    Button {
+                        viewModel.toggleEmotion(emotion)
+                    } label: {
+                        HStack {
+                            Text(emotion.icon)
+                                .font(.title3)
+                            Text(emotion.localizedTitle)
+                                .font(.subheadline.weight(.semibold))
+                        }
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 44)
+                        .background(isSelected ? Color.ourDarkGrey : Color.white)
+                        .foregroundColor(isSelected ? .white : .ourDarkGrey)
+                        .cornerRadius(16)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 16)
+                                .stroke(
+                                    isSelected ? Color.clear : Color.gray.opacity(0.2),
+                                    lineWidth: 1
+                                )
+                        )
+                        .shadow(color: Color.black.opacity(0.05), radius: 3, y: 1)
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
         }
         .padding(.horizontal, 20)
         .padding(.vertical, 16)
@@ -258,12 +285,9 @@ struct EmotionalStatusCard: View {
             RoundedRectangle(cornerRadius: 32)
                 .fill(Color(.systemGray6))
         )
-        .frame(maxWidth: .infinity, minHeight: 90, alignment: .center)
+        .frame(maxWidth: .infinity, alignment: .center)
     }
 }
-
-
-
 
 #Preview {
     MainPage()
