@@ -5,6 +5,7 @@ struct MainPage: View {
     @StateObject private var viewModel = MainPageViewModel()
     @State private var showMedications = true      // open by default (like the mock)
     @Query private var medications: [Medication]
+    @Query private var emotionLogs: [EmotionLog]
     
     // Group medications by time of day
     private var morningMeds: [Medication] {
@@ -83,6 +84,8 @@ struct MainPage: View {
             }
             .onAppear {
                 print("📱 MainPage appeared - Total medications: \(medications.count)")
+                
+                // Medication debugging…
                 for med in medications {
                     if med.dosage < 2 {
                         print("   - \(med.name): \(med.dosage) pill, time: \(med.timeOfDay?.rawValue ?? "nil")")
@@ -91,9 +94,20 @@ struct MainPage: View {
                         print("   - \(med.name): \(med.dosage) pills, times: [\(times)]")
                     }
                 }
+                
                 print("🌅 Morning meds: \(morningMeds.count)")
                 print("🌙 Night meds: \(nightMeds.count)")
+                
+                
+                // ⭐ ADD THIS TO CHECK IF EMOTION LOGS ARE BEING SAVED
+                print("🧠 Emotion logs stored:", emotionLogs.count)
+                for log in emotionLogs {
+                    print("  • emotions:", log.emotions.map { $0.localizedTitle })
+                    print("    intensity:", log.intensity.rawValue)
+                    print("    timestamp:", log.timestamp)
+                }
             }
+
         }
     }
 }
@@ -215,10 +229,10 @@ struct MealsCard: View {
 // MARK: - EMOTIONAL STATUS CARD  ✅ uses Emotion + ViewModel
 
 struct EmotionalStatusCard: View {
-    // Local view model so the chips behave like in EmotionalStatusView
+    @Environment(\.modelContext) private var modelContext
     @State private var viewModel = EmotionalStatusViewModel()
+    @Query private var emotionLogs: [EmotionLog]
     
-    // 2-column layout similar to your full emotional screen
     private let columns = [
         GridItem(.flexible(), spacing: 10),
         GridItem(.flexible(), spacing: 10)
@@ -226,7 +240,6 @@ struct EmotionalStatusCard: View {
     
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
-            // Header
             HStack(spacing: 12) {
                 Image(systemName: "heart.text.square.fill")
                     .font(.system(size: 22))
@@ -243,13 +256,20 @@ struct EmotionalStatusCard: View {
                 .font(.subheadline)
                 .foregroundColor(.secondary)
             
-            // Emotion chips – same logic as in EmotionalStatusView
+            // ⬇️ Emotion chips
             LazyVGrid(columns: columns, spacing: 10) {
                 ForEach(Emotion.allCases, id: \.self) { emotion in
                     let isSelected = viewModel.selectedEmotions.contains(emotion)
                     
                     Button {
+                        // 1) Update selection (same logic as your full screen)
                         viewModel.toggleEmotion(emotion)
+                        
+                        // 3) Auto-save once form is complete
+                        if viewModel.isFormComplete {
+                            viewModel.saveEntry(context: modelContext)
+                        }
+                        
                     } label: {
                         HStack {
                             Text(emotion.icon)
@@ -284,6 +304,7 @@ struct EmotionalStatusCard: View {
         .frame(maxWidth: .infinity, alignment: .center)
     }
 }
+
 
 #Preview {
     MainPage()

@@ -44,23 +44,26 @@ class EmotionalStatusViewModel {
     
     // MARK: - Database Logic
     func saveEntry(context: ModelContext) {
-        guard let intensity = selectedIntensity else { return }
-        
-        // 1. Create the new Log object
+        guard isFormComplete, let intensity = selectedIntensity else { return }
+
         let newLog = EmotionLog(
             emotions: selectedEmotions,
             intensity: intensity,
-            note: optionalNote.isEmpty ? nil : optionalNote
+            note: optionalNote
         )
         
-        // 2. Insert into SwiftData Context
         context.insert(newLog)
         
-        // 3. Trigger success UI
-        showSaveAlert = true
+        print("✅ Saved EmotionLog:")
+        print("   emotions:", selectedEmotions.map { $0.localizedTitle })
+        print("   intensity:", intensity.rawValue)
+        print("   notes:", optionalNote)
+        print("   at:", newLog.timestamp)
         
-        print("✅ Saved to SwiftData: \(newLog.emotions.map { $0.rawValue }) - \(newLog.intensity.rawValue)")
+        showSaveAlert = true
+        resetForm()
     }
+
     
     func resetForm() {
         selectedEmotions.removeAll()
