@@ -47,18 +47,14 @@ struct MainPage: View {
                         
                         Spacer()
                         
-                        // Top-right icon button
-                        Button {
-                            print("Header icon tapped")
-                        } label: {
-                            NavigationLink(destination: SummaryView()) {
-                                Image(systemName: "text.line.3.summary")
-                                    .foregroundColor(.ourDarkGrey)
-                                    .padding(10)
-                            }
-                            .buttonStyle(.plain)
-
+                        // Top-right navigation icon button
+                        NavigationLink(destination: SummaryView()) {
+                            Image(systemName: "text.line.3.summary")
+                                .font(.title)
+                                .foregroundColor(.ourDarkGrey)
+                                .padding(10)
                         }
+                        .buttonStyle(.plain)
                     }
                     .padding(.top, 1)
                     
@@ -135,6 +131,7 @@ struct MedicationsCard: View {
                 
                 Spacer()
                 
+                // Add button (NavigationLink)
                 NavigationLink(destination: MedicationView()) {
                     Image(systemName: "plus")
                         .font(.system(size: 20, weight: .semibold))
