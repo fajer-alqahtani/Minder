@@ -52,12 +52,8 @@ struct MainPage: View {
                         } label: {
                             NavigationLink(destination: SummaryView()) {
                                 Image(systemName: "text.line.3.summary")
-                                    .foregroundColor(.white)
+                                    .foregroundColor(.ourDarkGrey)
                                     .padding(10)
-                                    .background(
-                                        RoundedRectangle(cornerRadius: 10)
-                                            .fill(Color.ourDarkGrey)
-                                    )
                             }
                             .buttonStyle(.plain)
 
