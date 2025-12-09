@@ -86,7 +86,7 @@ struct MedicationView: View {
                 // Title
                 ToolbarItem(placement: .principal) {
                     Text("Add Medication").font(.title2.bold())
-                        .foregroundColor(.minderDark)
+                       
                 }
             }
         }
