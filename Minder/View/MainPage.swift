@@ -28,6 +28,7 @@ struct MainPage: View {
         }
     }
 
+
     var body: some View {
         NavigationStack {
             ScrollView {
@@ -120,22 +121,22 @@ struct MedicationsCard: View {
     @State private var medicationToDelete: Medication?
     @State private var timeToDelete: TimeOfDay?
 
-    
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
-            
+
             // Header row
             HStack(spacing: 12) {
                 Image(systemName: "pills")
                     .font(.system(size: 22))
                     .foregroundColor(.ourDarkGrey)
-                
-                Text("Medications")
+
+                // "Medications" → localizable key
+                Text(String(localized: "medications.card.title"))
                     .font(.headline)
                     .foregroundColor(.ourDarkGrey)
-                
+
                 Spacer()
-                
+
                 // Add button (NavigationLink)
                 NavigationLink(destination: MedicationView()) {
                     Image(systemName: "plus")
@@ -143,16 +144,19 @@ struct MedicationsCard: View {
                         .foregroundColor(.ourDarkGrey)
                 }
             }
-            
+
             if showMedications {
                 VStack(alignment: .leading, spacing: 16) {
-                    
+
+                    // Morning section
                     if !morningMeds.isEmpty {
                         VStack(alignment: .leading, spacing: 8) {
-                            Text("Morning")
+
+                            // "Morning" → use TimeOfDay.morning.titleKey
+                            Text(TimeOfDay.morning.titleKey)
                                 .font(.subheadline.weight(.semibold))
                                 .foregroundColor(.secondary)
-                            
+
                             VStack(spacing: 8) {
                                 ForEach(morningMeds) { medication in
                                     MedicationCard(
@@ -163,19 +167,21 @@ struct MedicationsCard: View {
                                             timeToDelete = .morning
                                             showDeleteAlert = true
                                         }
-
                                     )
                                 }
                             }
                         }
                     }
-                    
+
+                    // Night section
                     if !nightMeds.isEmpty {
                         VStack(alignment: .leading, spacing: 8) {
-                            Text("Night")
+
+                            // "Night" → use TimeOfDay.night.titleKey
+                            Text(TimeOfDay.night.titleKey)
                                 .font(.subheadline.weight(.semibold))
                                 .foregroundColor(.secondary)
-                            
+
                             VStack(spacing: 8) {
                                 ForEach(nightMeds) { medication in
                                     MedicationCard(
@@ -191,14 +197,16 @@ struct MedicationsCard: View {
                             }
                         }
                     }
-                    
+
+                    // Empty state
                     if medications.isEmpty {
                         VStack(spacing: 12) {
                             Image(systemName: "pills.circle")
                                 .font(.system(size: 40))
                                 .foregroundColor(.secondary)
-                            
-                            Text("No medications added yet")
+
+                            // "No medications added yet" → localizable key
+                            Text(String(localized: "medications.card.empty"))
                                 .font(.subheadline)
                                 .foregroundColor(.secondary)
                         }
@@ -215,7 +223,15 @@ struct MedicationsCard: View {
                 .fill(Color(.systemGray6))
         )
         .alert(
-            String(localized: "medication.delete.title"),
+            // Build the title inline using nil coalescing
+            medicationToDelete != nil && timeToDelete != nil
+                ? {
+                    let med = medicationToDelete!
+                    let time = timeToDelete!
+                    let format = String(localized: "medications.alert.delete")
+                    return String(format: format, locale: .current, med.name, time.titleString)
+                }()
+                : String(localized: "medications.alert.delete"),
             isPresented: $showDeleteAlert
         ) {
             Button(String(localized: "common.cancel"), role: .cancel) { }
@@ -226,38 +242,36 @@ struct MedicationsCard: View {
                 }
             }
         } message: {
-            Text(String(localized: "medication.delete.message"))
+            Text(String(localized: "medications.delete.message"))
         }
+
+
     }
-    
+
     // Smart delete function - handles single time removal or full deletion
     private func deleteMedicationFromTime(_ medication: Medication, timeToRemove: TimeOfDay) {
         withAnimation {
-            // If it's a single-dose medication (only one time), delete the whole medication
             if medication.dosage < 2 {
                 modelContext.delete(medication)
             } else {
-                // Multi-dose medication - remove only the specific time
                 medication.dosageTimes.removeAll { $0 == timeToRemove }
-                
-                // If only one time remains, update dosage to 1 and set timeOfDay
+
                 if medication.dosageTimes.count == 1 {
                     medication.dosage = 1
                     medication.timeOfDay = medication.dosageTimes.first
                     medication.dosageTimes = []
                 } else if medication.dosageTimes.isEmpty {
-                    // If no times remain (shouldn't happen but safety check), delete medication
                     modelContext.delete(medication)
                 } else {
-                    // Update dosage to match remaining times
                     medication.dosage = medication.dosageTimes.count
                 }
             }
-            
+
             try? modelContext.save()
         }
     }
 }
+
 
 // MARK: - MEALS CARD
 

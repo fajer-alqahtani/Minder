@@ -147,7 +147,7 @@ struct MedicineTimeSelector: View {
             
             if dosage >= 2 {
                 // Show multiple time selectors for each dose
-                ForEach(0..<dosage, id: \.self) { index in
+                ForEach(Array(0..<max(0, dosage)), id: \.self) { index in
                     VStack(alignment: .leading, spacing: 10) {
                         Text("\(ordinalText(for: index + 1)) Dosage Time")
                             .font(.title3)
@@ -155,7 +155,7 @@ struct MedicineTimeSelector: View {
                         
                         HStack {
                             TimeButton(
-                                title: TimeOfDay.morning.localizedTitle,
+                                title: TimeOfDay.morning.titleKey,
                                 icon: "sun.max.fill",
                                 iconColor: .yellow,
                                 isSelected: index < selectedTimes.count && selectedTimes[index] == .morning
@@ -166,7 +166,7 @@ struct MedicineTimeSelector: View {
                             Spacer()
                             
                             TimeButton(
-                                title: TimeOfDay.night.localizedTitle,
+                                title: TimeOfDay.night.titleKey,
                                 icon: "moon.fill",
                                 iconColor: .accentColor,
                                 isSelected: index < selectedTimes.count && selectedTimes[index] == .night
@@ -182,7 +182,7 @@ struct MedicineTimeSelector: View {
                 // Show original single time selector for dosage = 1
                 HStack {
                     TimeButton(
-                        title: TimeOfDay.morning.localizedTitle,
+                        title: TimeOfDay.morning.titleKey,
                         icon: "sun.max.fill",
                         iconColor: .yellow,
                         isSelected: selectedTime == .morning
@@ -193,7 +193,7 @@ struct MedicineTimeSelector: View {
                     Spacer()
                     
                     TimeButton(
-                        title: TimeOfDay.night.localizedTitle,
+                        title: TimeOfDay.night.titleKey,
                         icon: "moon.fill",
                         iconColor: .accentColor,
                         isSelected: selectedTime == .night
