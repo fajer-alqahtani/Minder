@@ -223,10 +223,11 @@ struct MealsCard: View {
     }
 }
 
-// MARK: - EMOTIONAL STATUS CARD  ✅ uses Emotion + ViewModel
+// MARK: - EMOTIONAL STATUS CARD  ✅ uses Emotion + ViewModel + Color Scheme Fix
 
 struct EmotionalStatusCard: View {
     @Environment(\.modelContext) private var modelContext
+    @Environment(\.colorScheme) var colorScheme  // ⬅️ ADDED
     @State private var viewModel = EmotionalStatusViewModel()
     @Query private var emotionLogs: [EmotionLog]
     
@@ -259,10 +260,10 @@ struct EmotionalStatusCard: View {
                     let isSelected = viewModel.selectedEmotions.contains(emotion)
                     
                     Button {
-                        // 1) Update selection (same logic as your full screen)
+                        // 1) Update selection
                         viewModel.toggleEmotion(emotion)
                         
-                        // 3) Auto-save once form is complete
+                        // 2) Auto-save once form is complete
                         if viewModel.isFormComplete {
                             viewModel.saveEntry(context: modelContext)
                         }
@@ -277,7 +278,7 @@ struct EmotionalStatusCard: View {
                         .frame(maxWidth: .infinity)
                         .frame(height: 44)
                         .background(isSelected ? Color.ourDarkGrey : Color(.systemBackground))
-                        .foregroundColor(isSelected ? .white : .primary)
+                        .foregroundColor(textColor(isSelected: isSelected))  // ⬅️ UPDATED
                         .cornerRadius(16)
                         .overlay(
                             RoundedRectangle(cornerRadius: 16)
@@ -299,6 +300,15 @@ struct EmotionalStatusCard: View {
                 .fill(Color(.systemGray6))
         )
         .frame(maxWidth: .infinity, alignment: .center)
+    }
+    
+    // ⬅️ ADDED HELPER FUNCTION
+    private func textColor(isSelected: Bool) -> Color {
+        if isSelected {
+            return colorScheme == .dark ? .black : .white
+        } else {
+            return .primary
+        }
     }
 }
 
