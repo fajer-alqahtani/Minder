@@ -500,14 +500,14 @@
       "localizations" : {
         "ar" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "تمت إضافة %@ بنجاح!\nالجرعة: %d حبة\n"
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%@ added successfully!\\nDosage: %d pill(s)"
+            "value" : "%@ added successfully!\nDosage: %d pill(s)\n"
           }
         }
       }
