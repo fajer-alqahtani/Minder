@@ -111,6 +111,7 @@ struct MainPage: View {
 // MARK: - MEDICATIONS CARD VIEW
 
 struct MedicationsCard: View {
+    @Environment(\.modelContext) private var modelContext
     @Binding var showMedications: Bool
     let medications: [Medication]
     let morningMeds: [Medication]
@@ -150,7 +151,13 @@ struct MedicationsCard: View {
                             
                             VStack(spacing: 8) {
                                 ForEach(morningMeds) { medication in
-                                    MedicationCard(medication: medication, displayTime: .morning)
+                                    MedicationCard(
+                                        medication: medication,
+                                        displayTime: .morning,
+                                        onDelete: {
+                                            deleteMedicationFromTime(medication, timeToRemove: .morning)
+                                        }
+                                    )
                                 }
                             }
                         }
@@ -164,7 +171,13 @@ struct MedicationsCard: View {
                             
                             VStack(spacing: 8) {
                                 ForEach(nightMeds) { medication in
-                                    MedicationCard(medication: medication, displayTime: .night)
+                                    MedicationCard(
+                                        medication: medication,
+                                        displayTime: .night,
+                                        onDelete: {
+                                            deleteMedicationFromTime(medication, timeToRemove: .night)
+                                        }
+                                    )
                                 }
                             }
                         }
@@ -193,6 +206,34 @@ struct MedicationsCard: View {
                 .fill(Color(.systemGray6))
         )
         .frame(maxWidth: .infinity, minHeight: 211, alignment: .topLeading)
+    }
+    
+    // Smart delete function - handles single time removal or full deletion
+    private func deleteMedicationFromTime(_ medication: Medication, timeToRemove: TimeOfDay) {
+        withAnimation {
+            // If it's a single-dose medication (only one time), delete the whole medication
+            if medication.dosage < 2 {
+                modelContext.delete(medication)
+            } else {
+                // Multi-dose medication - remove only the specific time
+                medication.dosageTimes.removeAll { $0 == timeToRemove }
+                
+                // If only one time remains, update dosage to 1 and set timeOfDay
+                if medication.dosageTimes.count == 1 {
+                    medication.dosage = 1
+                    medication.timeOfDay = medication.dosageTimes.first
+                    medication.dosageTimes = []
+                } else if medication.dosageTimes.isEmpty {
+                    // If no times remain (shouldn't happen but safety check), delete medication
+                    modelContext.delete(medication)
+                } else {
+                    // Update dosage to match remaining times
+                    medication.dosage = medication.dosageTimes.count
+                }
+            }
+            
+            try? modelContext.save()
+        }
     }
 }
 
@@ -227,7 +268,7 @@ struct MealsCard: View {
 
 struct EmotionalStatusCard: View {
     @Environment(\.modelContext) private var modelContext
-    @Environment(\.colorScheme) var colorScheme  // ⬅️ ADDED
+    @Environment(\.colorScheme) var colorScheme
     @State private var viewModel = EmotionalStatusViewModel()
     @Query private var emotionLogs: [EmotionLog]
     
@@ -260,10 +301,8 @@ struct EmotionalStatusCard: View {
                     let isSelected = viewModel.selectedEmotions.contains(emotion)
                     
                     Button {
-                        // 1) Update selection
                         viewModel.toggleEmotion(emotion)
                         
-                        // 2) Auto-save once form is complete
                         if viewModel.isFormComplete {
                             viewModel.saveEntry(context: modelContext)
                         }
@@ -278,7 +317,7 @@ struct EmotionalStatusCard: View {
                         .frame(maxWidth: .infinity)
                         .frame(height: 44)
                         .background(isSelected ? Color.ourDarkGrey : Color(.systemBackground))
-                        .foregroundColor(textColor(isSelected: isSelected))  // ⬅️ UPDATED
+                        .foregroundColor(textColor(isSelected: isSelected))
                         .cornerRadius(16)
                         .overlay(
                             RoundedRectangle(cornerRadius: 16)
@@ -302,7 +341,6 @@ struct EmotionalStatusCard: View {
         .frame(maxWidth: .infinity, alignment: .center)
     }
     
-    // ⬅️ ADDED HELPER FUNCTION
     private func textColor(isSelected: Bool) -> Color {
         if isSelected {
             return colorScheme == .dark ? .black : .white
