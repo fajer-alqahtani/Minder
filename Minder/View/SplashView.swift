@@ -76,7 +76,7 @@ struct SplashView: View {
                         .easeOut(duration: 0.7).delay(1.2),
                         value: showTagline
                     )
-                }
+                }.environment(\.layoutDirection, .leftToRight)
 
                 Spacer()
             }
