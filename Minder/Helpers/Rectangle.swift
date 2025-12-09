@@ -11,7 +11,6 @@ struct MedicationCard: View {
     let timeOfDay: TimeOfDay
     @State private var isSelected: Bool = false
     var onDelete: (() -> Void)? = nil
-    @State private var showDeleteAlert = false
     
     var body: some View {
         ZStack {
@@ -45,13 +44,13 @@ struct MedicationCard: View {
                     .foregroundStyle(.primary)
                     .lineLimit(1)
                 
-               
                 Spacer()
                 
                 // Delete button
                 if onDelete != nil {
                     Button(action: {
-                        showDeleteAlert = true
+                        // Directly delegate to parent to present a single confirmation
+                        onDelete?()
                     }) {
                         Image(systemName: "xmark.circle.fill")
                             .font(.system(size: 20))
@@ -67,14 +66,6 @@ struct MedicationCard: View {
             withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
                 isSelected.toggle()
             }
-        }
-        .alert("Remove Medication", isPresented: $showDeleteAlert) {
-            Button("Cancel", role: .cancel) { }
-            Button("Remove", role: .destructive) {
-                onDelete?()
-            }
-        } message: {
-            Text("Remove \(medicationName) from \(timeOfDay == .morning ? "morning" : "night")?")
         }
     }
 }

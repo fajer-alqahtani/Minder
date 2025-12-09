@@ -223,15 +223,7 @@ struct MedicationsCard: View {
                 .fill(Color(.systemGray6))
         )
         .alert(
-            // Build the title inline using nil coalescing
-            medicationToDelete != nil && timeToDelete != nil
-                ? {
-                    let med = medicationToDelete!
-                    let time = timeToDelete!
-                    let format = String(localized: "medications.alert.delete")
-                    return String(format: format, locale: .current, med.name, time.titleString)
-                }()
-                : String(localized: "medications.alert.delete"),
+            String(localized: "medication.delete.title"),
             isPresented: $showDeleteAlert
         ) {
             Button(String(localized: "common.cancel"), role: .cancel) { }
@@ -244,6 +236,7 @@ struct MedicationsCard: View {
         } message: {
             Text(String(localized: "medications.delete.message"))
         }
+
 
 
     }
