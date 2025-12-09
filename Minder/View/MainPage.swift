@@ -276,8 +276,8 @@ struct EmotionalStatusCard: View {
                         }
                         .frame(maxWidth: .infinity)
                         .frame(height: 44)
-                        .background(isSelected ? Color.ourDarkGrey : Color.white)
-                        .foregroundColor(isSelected ? .white : .ourDarkGrey)
+                        .background(isSelected ? Color.ourDarkGrey : Color(.systemBackground))
+                        .foregroundColor(isSelected ? .white : .primary)
                         .cornerRadius(16)
                         .overlay(
                             RoundedRectangle(cornerRadius: 16)
