@@ -116,6 +116,10 @@ struct MedicationsCard: View {
     let medications: [Medication]
     let morningMeds: [Medication]
     let nightMeds: [Medication]
+    @State private var showDeleteAlert = false
+    @State private var medicationToDelete: Medication?
+    @State private var timeToDelete: TimeOfDay?
+
     
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
@@ -155,8 +159,11 @@ struct MedicationsCard: View {
                                         medication: medication,
                                         displayTime: .morning,
                                         onDelete: {
-                                            deleteMedicationFromTime(medication, timeToRemove: .morning)
+                                            medicationToDelete = medication
+                                            timeToDelete = .morning
+                                            showDeleteAlert = true
                                         }
+
                                     )
                                 }
                             }
@@ -175,7 +182,9 @@ struct MedicationsCard: View {
                                         medication: medication,
                                         displayTime: .night,
                                         onDelete: {
-                                            deleteMedicationFromTime(medication, timeToRemove: .night)
+                                            medicationToDelete = medication
+                                            timeToDelete = .night
+                                            showDeleteAlert = true
                                         }
                                     )
                                 }
@@ -205,7 +214,20 @@ struct MedicationsCard: View {
             RoundedRectangle(cornerRadius: 32)
                 .fill(Color(.systemGray6))
         )
-        .frame(maxWidth: .infinity, minHeight: 211, alignment: .topLeading)
+        .alert(
+            String(localized: "medication.delete.title"),
+            isPresented: $showDeleteAlert
+        ) {
+            Button(String(localized: "common.cancel"), role: .cancel) { }
+
+            Button(String(localized: "medication.delete.confirm"), role: .destructive) {
+                if let med = medicationToDelete, let time = timeToDelete {
+                    deleteMedicationFromTime(med, timeToRemove: time)
+                }
+            }
+        } message: {
+            Text(String(localized: "medication.delete.message"))
+        }
     }
     
     // Smart delete function - handles single time removal or full deletion
