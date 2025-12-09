@@ -62,14 +62,21 @@ struct MedicationView: View {
                     }
                     .padding(25)
                     
-                    .alert("Medication Added", isPresented: $showConfirmAlert) {
-                        Button("OK") {
+                    .alert(
+                        String(localized: "medication.alert.title"),
+                        isPresented: $showConfirmAlert
+                    ) {
+                        Button(String(localized: "common.ok")) {
                             viewModel.confirmMedication()
                             dismiss()
                         }
                     } message: {
-                        Text("\(viewModel.medicineName) added successfully!\nDosage: \(viewModel.dosage) pill(s)")
+                        // Build a localized format and then format with arguments
+                        let format = String(localized: "medication.alert.message")
+                        let message = String(format: format, locale: .current, viewModel.medicineName, viewModel.dosage)
+                        Text(message)
                     }
+
                 } else {
                     // Show loading indicator while the viewModel is loading
                     ProgressView()
@@ -252,7 +259,7 @@ struct ConfirmButton: View {
     
     var body: some View {
         Button(action: action) {
-            Text("CONFIRM")
+            Text(String(localized: "confirm.button.title"))  // "CONFIRM"
                 .font(.title2)
                 .bold()
                 .foregroundStyle(Color.white)
@@ -264,6 +271,7 @@ struct ConfirmButton: View {
         .disabled(!isEnabled)
     }
 }
+
 
 #Preview {
     MedicationView()
