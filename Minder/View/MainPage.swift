@@ -3,12 +3,9 @@ import SwiftData
 
 struct MainPage: View {
     @StateObject private var viewModel = MainPageViewModel()
-    @State private var showMedications = true
+    @State private var showMedications = true      // open by default (like the mock)
     @Query private var medications: [Medication]
     @Query private var emotionLogs: [EmotionLog]
-    @Query private var medicationLogs: [MedicationLog]  // ⬅️ ADDED
-    @Environment(\.modelContext) private var modelContext  // ⬅️ ADDED
-    @AppStorage("lastCheckedDate") private var lastCheckedDateString = ""  // ⬅️ ADDED
     
     // Group medications by time of day
     private var morningMeds: [Medication] {
@@ -30,6 +27,7 @@ struct MainPage: View {
             }
         }
     }
+
 
     var body: some View {
         NavigationStack {
@@ -72,7 +70,7 @@ struct MainPage: View {
                     // MARK: - MEALS CARD
                     MealsCard()
                     
-                    // MARK: - EMOTIONAL STATUS CARD
+                    // MARK: - EMOTIONAL STATUS CARD  ✅ updated
                     EmotionalStatusCard()
                     
                     Spacer(minLength: 40)
@@ -82,8 +80,6 @@ struct MainPage: View {
                 .padding(.bottom, 24)
             }
             .onAppear {
-                checkAndSaveYesterdayMedications()  // ⬅️ NEW: Auto-save yesterday's unchecked
-                
                 print("📱 MainPage appeared - Total medications: \(medications.count)")
                 
                 // Medication debugging…
@@ -99,6 +95,8 @@ struct MainPage: View {
                 print("🌅 Morning meds: \(morningMeds.count)")
                 print("🌙 Night meds: \(nightMeds.count)")
                 
+                
+                // ⭐ ADD THIS TO CHECK IF EMOTION LOGS ARE BEING SAVED
                 print("🧠 Emotion logs stored:", emotionLogs.count)
                 for log in emotionLogs {
                     print("  • emotions:", log.emotions.map { $0.localizedTitle })
@@ -106,65 +104,8 @@ struct MainPage: View {
                     print("    timestamp:", log.timestamp)
                 }
             }
+
         }
-    }
-    
-    // ⬅️ NEW: Check if it's a new day and save yesterday's unchecked medications
-    private func checkAndSaveYesterdayMedications() {
-        let today = Calendar.current.startOfDay(for: Date())
-        let todayString = ISO8601DateFormatter().string(from: today)
-        
-        // Check if we've already processed today
-        if lastCheckedDateString == todayString {
-            return  // Already processed today
-        }
-        
-        // It's a new day! Check yesterday's medications
-        guard let yesterday = Calendar.current.date(byAdding: .day, value: -1, to: today) else { return }
-        
-        print("🌅 NEW DAY DETECTED - Processing yesterday's medications...")
-        
-        // Get all medication entries for yesterday
-        for medication in medications {
-            var timesToCheck: [TimeOfDay] = []
-            
-            if medication.dosage < 2 {
-                if let time = medication.timeOfDay {
-                    timesToCheck.append(time)
-                }
-            } else {
-                timesToCheck = medication.dosageTimes
-            }
-            
-            // Check each time slot
-            for time in timesToCheck {
-                let hasLog = medicationLogs.contains { log in
-                    log.medicationId == medication.id &&
-                    log.timeOfDay == time &&
-                    Calendar.current.isDate(log.date, inSameDayAs: yesterday)
-                }
-                
-                if !hasLog {
-                    // No log exists - create one with wasTaken = false
-                    let missedLog = MedicationLog(
-                        medicationName: medication.name,
-                        medicationId: medication.id,
-                        timeOfDay: time,
-                        wasTaken: false,
-                        date: yesterday
-                    )
-                    modelContext.insert(missedLog)
-                    print("❌ Created 'not taken' log: \(medication.name) - \(time.rawValue) for yesterday")
-                }
-            }
-        }
-        
-        // Save all the "not taken" logs
-        try? modelContext.save()
-        
-        // Update last checked date
-        lastCheckedDateString = todayString
-        print("✅ Finished processing yesterday's medications")
     }
 }
 
@@ -176,22 +117,26 @@ struct MedicationsCard: View {
     let medications: [Medication]
     let morningMeds: [Medication]
     let nightMeds: [Medication]
-    
+    @State private var showDeleteAlert = false
+    @State private var medicationToDelete: Medication?
+    @State private var timeToDelete: TimeOfDay?
+
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
-            
+
             // Header row
             HStack(spacing: 12) {
                 Image(systemName: "pills")
                     .font(.system(size: 22))
                     .foregroundColor(.ourDarkGrey)
-                
-                Text("Medications")
+
+                // "Medications" → localizable key
+                Text(String(localized: "medications.card.title"))
                     .font(.headline)
                     .foregroundColor(.ourDarkGrey)
-                
+
                 Spacer()
-                
+
                 // Add button (NavigationLink)
                 NavigationLink(destination: MedicationView()) {
                     Image(systemName: "plus")
@@ -199,57 +144,69 @@ struct MedicationsCard: View {
                         .foregroundColor(.ourDarkGrey)
                 }
             }
-            
+
             if showMedications {
                 VStack(alignment: .leading, spacing: 16) {
-                    
+
+                    // Morning section
                     if !morningMeds.isEmpty {
                         VStack(alignment: .leading, spacing: 8) {
-                            Text("Morning")
+
+                            // "Morning" → use TimeOfDay.morning.titleKey
+                            Text(TimeOfDay.morning.titleKey)
                                 .font(.subheadline.weight(.semibold))
                                 .foregroundColor(.secondary)
-                            
+
                             VStack(spacing: 8) {
                                 ForEach(morningMeds) { medication in
                                     MedicationCard(
                                         medication: medication,
                                         displayTime: .morning,
                                         onDelete: {
-                                            deleteMedicationFromTime(medication, timeToRemove: .morning)
+                                            medicationToDelete = medication
+                                            timeToDelete = .morning
+                                            showDeleteAlert = true
                                         }
                                     )
                                 }
                             }
                         }
                     }
-                    
+
+                    // Night section
                     if !nightMeds.isEmpty {
                         VStack(alignment: .leading, spacing: 8) {
-                            Text("Night")
+
+                            // "Night" → use TimeOfDay.night.titleKey
+                            Text(TimeOfDay.night.titleKey)
                                 .font(.subheadline.weight(.semibold))
                                 .foregroundColor(.secondary)
-                            
+
                             VStack(spacing: 8) {
                                 ForEach(nightMeds) { medication in
                                     MedicationCard(
                                         medication: medication,
                                         displayTime: .night,
                                         onDelete: {
-                                            deleteMedicationFromTime(medication, timeToRemove: .night)
+                                            medicationToDelete = medication
+                                            timeToDelete = .night
+                                            showDeleteAlert = true
                                         }
                                     )
                                 }
                             }
                         }
                     }
-                    
+
+                    // Empty state
                     if medications.isEmpty {
                         VStack(spacing: 12) {
                             Image(systemName: "pills.circle")
                                 .font(.system(size: 40))
                                 .foregroundColor(.secondary)
-                            
-                            Text("No medications added yet")
+
+                            // "No medications added yet" → localizable key
+                            Text(String(localized: "medications.card.empty"))
                                 .font(.subheadline)
                                 .foregroundColor(.secondary)
                         }
@@ -265,37 +222,49 @@ struct MedicationsCard: View {
             RoundedRectangle(cornerRadius: 32)
                 .fill(Color(.systemGray6))
         )
-        .frame(maxWidth: .infinity, minHeight: 211, alignment: .topLeading)
+        .alert(
+            String(localized: "medication.delete.title"),
+            isPresented: $showDeleteAlert
+        ) {
+            Button(String(localized: "common.cancel"), role: .cancel) { }
+
+            Button(String(localized: "medication.delete.confirm"), role: .destructive) {
+                if let med = medicationToDelete, let time = timeToDelete {
+                    deleteMedicationFromTime(med, timeToRemove: time)
+                }
+            }
+        } message: {
+            Text(String(localized: "medications.delete.message"))
+        }
+
+
+
     }
-    
+
     // Smart delete function - handles single time removal or full deletion
     private func deleteMedicationFromTime(_ medication: Medication, timeToRemove: TimeOfDay) {
         withAnimation {
-            // If it's a single-dose medication (only one time), delete the whole medication
             if medication.dosage < 2 {
                 modelContext.delete(medication)
             } else {
-                // Multi-dose medication - remove only the specific time
                 medication.dosageTimes.removeAll { $0 == timeToRemove }
-                
-                // If only one time remains, update dosage to 1 and set timeOfDay
+
                 if medication.dosageTimes.count == 1 {
                     medication.dosage = 1
                     medication.timeOfDay = medication.dosageTimes.first
                     medication.dosageTimes = []
                 } else if medication.dosageTimes.isEmpty {
-                    // If no times remain (shouldn't happen but safety check), delete medication
                     modelContext.delete(medication)
                 } else {
-                    // Update dosage to match remaining times
                     medication.dosage = medication.dosageTimes.count
                 }
             }
-            
+
             try? modelContext.save()
         }
     }
 }
+
 
 // MARK: - MEALS CARD
 
@@ -324,7 +293,7 @@ struct MealsCard: View {
     }
 }
 
-// MARK: - EMOTIONAL STATUS CARD
+// MARK: - EMOTIONAL STATUS CARD  ✅ uses Emotion + ViewModel + Color Scheme Fix
 
 struct EmotionalStatusCard: View {
     @Environment(\.modelContext) private var modelContext
@@ -413,5 +382,5 @@ struct EmotionalStatusCard: View {
 
 #Preview {
     MainPage()
-        .modelContainer(for: [Medication.self, MedicationLog.self], inMemory: true)
+        .modelContainer(for: Medication.self, inMemory: true)
 }

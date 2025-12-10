@@ -7,13 +7,26 @@ enum TimeOfDay: String, CaseIterable, Codable {
     case morning
     case night
     
-    var localizedTitle: LocalizedStringKey {
+    /// For SwiftUI Text – use in Text(...)
+    var titleKey: LocalizedStringKey {
         switch self {
         case .morning: return "Morning"
         case .night:   return "Night"
         }
     }
+    
+    /// For String(format: ...) and alerts – real localized String
+    var titleString: String {
+        switch self {
+        case .morning:
+            return String(localized: "Morning")
+        case .night:
+            return String(localized: "Night")
+        }
+    }
 }
+
+
 
 
 // --- THE SWIFTDATA MODEL ---
