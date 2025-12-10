@@ -5,7 +5,7 @@ import SwiftData
 @Observable
 class MedicationViewModel {
     var medicineName: String = ""
-    var dosage: Int = 0
+    var dosage: Int = 1  // ⬅️ Changed from 0 to 1 for better UX
     var selectedTime: TimeOfDay? = nil
     var selectedTimes: [TimeOfDay?] = []  // For multiple doses
     
@@ -20,10 +20,11 @@ class MedicationViewModel {
             // Single dose: check if name, dosage, and time are set
             return !medicineName.isEmpty && dosage > 0 && selectedTime != nil
         } else {
-            // Multiple doses: check if all times are selected
-            return !medicineName.isEmpty && dosage > 0 && 
-                   selectedTimes.count == dosage && 
-                   selectedTimes.allSatisfy { $0 != nil }
+            // Multiple doses: check if all times are selected and no duplicates
+            let validTimes = selectedTimes.compactMap { $0 }
+            return !medicineName.isEmpty && dosage > 0 &&
+                   validTimes.count == dosage &&
+                   Set(validTimes).count == validTimes.count  // No duplicates
         }
     }
     
@@ -89,6 +90,12 @@ class MedicationViewModel {
     }
     
     func selectTimeForDosage(index: Int, time: TimeOfDay) {
+        // Prevent duplicate time selection
+        if selectedTimes.contains(where: { $0 == time }) {
+            print("⚠️ This time is already selected for another dose")
+            return
+        }
+        
         while selectedTimes.count <= index {
             selectedTimes.append(nil)
         }
@@ -97,7 +104,7 @@ class MedicationViewModel {
     
     func resetForm() {
         medicineName = ""
-        dosage = 0
+        dosage = 1
         selectedTime = nil
         selectedTimes = []
     }

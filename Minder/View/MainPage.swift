@@ -3,9 +3,12 @@ import SwiftData
 
 struct MainPage: View {
     @StateObject private var viewModel = MainPageViewModel()
-    @State private var showMedications = true      // open by default (like the mock)
+    @State private var showMedications = true
     @Query private var medications: [Medication]
     @Query private var emotionLogs: [EmotionLog]
+    @Query private var medicationLogs: [MedicationLog]  // ⬅️ ADDED
+    @Environment(\.modelContext) private var modelContext  // ⬅️ ADDED
+    @AppStorage("lastCheckedDate") private var lastCheckedDateString = ""  // ⬅️ ADDED
     
     // Group medications by time of day
     private var morningMeds: [Medication] {
@@ -69,7 +72,7 @@ struct MainPage: View {
                     // MARK: - MEALS CARD
                     MealsCard()
                     
-                    // MARK: - EMOTIONAL STATUS CARD  ✅ updated
+                    // MARK: - EMOTIONAL STATUS CARD
                     EmotionalStatusCard()
                     
                     Spacer(minLength: 40)
@@ -79,6 +82,8 @@ struct MainPage: View {
                 .padding(.bottom, 24)
             }
             .onAppear {
+                checkAndSaveYesterdayMedications()  // ⬅️ NEW: Auto-save yesterday's unchecked
+                
                 print("📱 MainPage appeared - Total medications: \(medications.count)")
                 
                 // Medication debugging…
@@ -94,8 +99,6 @@ struct MainPage: View {
                 print("🌅 Morning meds: \(morningMeds.count)")
                 print("🌙 Night meds: \(nightMeds.count)")
                 
-                
-                // ⭐ ADD THIS TO CHECK IF EMOTION LOGS ARE BEING SAVED
                 print("🧠 Emotion logs stored:", emotionLogs.count)
                 for log in emotionLogs {
                     print("  • emotions:", log.emotions.map { $0.localizedTitle })
@@ -103,8 +106,65 @@ struct MainPage: View {
                     print("    timestamp:", log.timestamp)
                 }
             }
-
         }
+    }
+    
+    // ⬅️ NEW: Check if it's a new day and save yesterday's unchecked medications
+    private func checkAndSaveYesterdayMedications() {
+        let today = Calendar.current.startOfDay(for: Date())
+        let todayString = ISO8601DateFormatter().string(from: today)
+        
+        // Check if we've already processed today
+        if lastCheckedDateString == todayString {
+            return  // Already processed today
+        }
+        
+        // It's a new day! Check yesterday's medications
+        guard let yesterday = Calendar.current.date(byAdding: .day, value: -1, to: today) else { return }
+        
+        print("🌅 NEW DAY DETECTED - Processing yesterday's medications...")
+        
+        // Get all medication entries for yesterday
+        for medication in medications {
+            var timesToCheck: [TimeOfDay] = []
+            
+            if medication.dosage < 2 {
+                if let time = medication.timeOfDay {
+                    timesToCheck.append(time)
+                }
+            } else {
+                timesToCheck = medication.dosageTimes
+            }
+            
+            // Check each time slot
+            for time in timesToCheck {
+                let hasLog = medicationLogs.contains { log in
+                    log.medicationId == medication.id &&
+                    log.timeOfDay == time &&
+                    Calendar.current.isDate(log.date, inSameDayAs: yesterday)
+                }
+                
+                if !hasLog {
+                    // No log exists - create one with wasTaken = false
+                    let missedLog = MedicationLog(
+                        medicationName: medication.name,
+                        medicationId: medication.id,
+                        timeOfDay: time,
+                        wasTaken: false,
+                        date: yesterday
+                    )
+                    modelContext.insert(missedLog)
+                    print("❌ Created 'not taken' log: \(medication.name) - \(time.rawValue) for yesterday")
+                }
+            }
+        }
+        
+        // Save all the "not taken" logs
+        try? modelContext.save()
+        
+        // Update last checked date
+        lastCheckedDateString = todayString
+        print("✅ Finished processing yesterday's medications")
     }
 }
 
@@ -116,10 +176,6 @@ struct MedicationsCard: View {
     let medications: [Medication]
     let morningMeds: [Medication]
     let nightMeds: [Medication]
-    @State private var showDeleteAlert = false
-    @State private var medicationToDelete: Medication?
-    @State private var timeToDelete: TimeOfDay?
-
     
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
@@ -159,11 +215,8 @@ struct MedicationsCard: View {
                                         medication: medication,
                                         displayTime: .morning,
                                         onDelete: {
-                                            medicationToDelete = medication
-                                            timeToDelete = .morning
-                                            showDeleteAlert = true
+                                            deleteMedicationFromTime(medication, timeToRemove: .morning)
                                         }
-
                                     )
                                 }
                             }
@@ -182,9 +235,7 @@ struct MedicationsCard: View {
                                         medication: medication,
                                         displayTime: .night,
                                         onDelete: {
-                                            medicationToDelete = medication
-                                            timeToDelete = .night
-                                            showDeleteAlert = true
+                                            deleteMedicationFromTime(medication, timeToRemove: .night)
                                         }
                                     )
                                 }
@@ -214,20 +265,7 @@ struct MedicationsCard: View {
             RoundedRectangle(cornerRadius: 32)
                 .fill(Color(.systemGray6))
         )
-        .alert(
-            String(localized: "medication.delete.title"),
-            isPresented: $showDeleteAlert
-        ) {
-            Button(String(localized: "common.cancel"), role: .cancel) { }
-
-            Button(String(localized: "medication.delete.confirm"), role: .destructive) {
-                if let med = medicationToDelete, let time = timeToDelete {
-                    deleteMedicationFromTime(med, timeToRemove: time)
-                }
-            }
-        } message: {
-            Text(String(localized: "medication.delete.message"))
-        }
+        .frame(maxWidth: .infinity, minHeight: 211, alignment: .topLeading)
     }
     
     // Smart delete function - handles single time removal or full deletion
@@ -286,7 +324,7 @@ struct MealsCard: View {
     }
 }
 
-// MARK: - EMOTIONAL STATUS CARD  ✅ uses Emotion + ViewModel + Color Scheme Fix
+// MARK: - EMOTIONAL STATUS CARD
 
 struct EmotionalStatusCard: View {
     @Environment(\.modelContext) private var modelContext
@@ -375,5 +413,5 @@ struct EmotionalStatusCard: View {
 
 #Preview {
     MainPage()
-        .modelContainer(for: Medication.self, inMemory: true)
+        .modelContainer(for: [Medication.self, MedicationLog.self], inMemory: true)
 }
