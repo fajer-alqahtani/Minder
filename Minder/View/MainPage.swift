@@ -2,10 +2,13 @@ import SwiftUI
 import SwiftData
 
 struct MainPage: View {
+    @Environment(\.modelContext) private var modelContext
     @StateObject private var viewModel = MainPageViewModel()
     @State private var showMedications = true      // open by default
+    @AppStorage("lastCheckedDateString") private var lastCheckedDateString: String = ""
     @Query private var medications: [Medication]
     @Query private var emotionLogs: [EmotionLog]
+    @Query private var medicationLogs: [MedicationLog]
     
     // Group medications by time of day
     private var morningMeds: [Medication] {
