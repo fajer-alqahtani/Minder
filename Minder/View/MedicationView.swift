@@ -1,10 +1,3 @@
-///
-//  MedicationView.swift
-//  Minder
-//
-//  Created by Areeg Altaiyah on 24/11/2025.
-
-
 import SwiftUI
 import SwiftData
 
