@@ -5,9 +5,9 @@ import SwiftData
 @Observable
 class MedicationViewModel {
     var medicineName: String = ""
-    var dosage: Int = 0
+    var dosage: Int = 1
     var selectedTime: TimeOfDay? = nil
-    var selectedTimes: [TimeOfDay?] = []  // For multiple doses
+    var selectedTimes: [TimeOfDay?] = []
     
     private var modelContext: ModelContext
     
@@ -17,12 +17,11 @@ class MedicationViewModel {
     
     var isConfirmEnabled: Bool {
         if dosage < 2 {
-            // Single dose: check if name, dosage, and time are set
             return !medicineName.isEmpty && dosage > 0 && selectedTime != nil
         } else {
-            // Multiple doses: check if all times are selected
-            return !medicineName.isEmpty && dosage > 0 && 
-                   selectedTimes.count == dosage && 
+            // ⬅️ CHANGED: Allow duplicates, just check all slots are filled
+            return !medicineName.isEmpty && dosage > 0 &&
+                   selectedTimes.count == dosage &&
                    selectedTimes.allSatisfy { $0 != nil }
         }
     }
@@ -31,14 +30,12 @@ class MedicationViewModel {
         let medication: Medication
         
         if dosage < 2 {
-            // Single dose
             medication = Medication(
                 name: medicineName,
                 dosage: dosage,
                 timeOfDay: selectedTime
             )
         } else {
-            // Multiple doses
             let times = selectedTimes.compactMap { $0 }
             medication = Medication(
                 name: medicineName,
@@ -49,12 +46,10 @@ class MedicationViewModel {
         
         print("🔵 BEFORE INSERT - Creating medication: \(medication.name)")
         
-        // Save to SwiftData
         modelContext.insert(medication)
         
         print("🟡 AFTER INSERT - About to save...")
         
-        // CRITICAL: Explicitly save the context
         do {
             try modelContext.save()
             if dosage < 2 {
@@ -64,7 +59,6 @@ class MedicationViewModel {
                 print("✅ SAVE SUCCESS: \(medication.name) - \(medication.dosage) pills - Times: \(timesStr)")
             }
             
-            // Verify it's in the context
             let descriptor = FetchDescriptor<Medication>()
             let allMeds = try modelContext.fetch(descriptor)
             print("📊 Total medications in context: \(allMeds.count)")
@@ -80,7 +74,6 @@ class MedicationViewModel {
             print("❌ SAVE FAILED: \(error.localizedDescription)")
         }
 
-        // Clear the form
         resetForm()
     }
     
@@ -89,6 +82,7 @@ class MedicationViewModel {
     }
     
     func selectTimeForDosage(index: Int, time: TimeOfDay) {
+        // ⬅️ REMOVED: Duplicate prevention - now allows morning, morning, night
         while selectedTimes.count <= index {
             selectedTimes.append(nil)
         }
@@ -97,7 +91,7 @@ class MedicationViewModel {
     
     func resetForm() {
         medicineName = ""
-        dosage = 0
+        dosage = 1
         selectedTime = nil
         selectedTimes = []
     }
