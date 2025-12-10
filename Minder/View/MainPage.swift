@@ -50,7 +50,7 @@ struct MainPage: View {
                         
                         // Top-right navigation icon button
                         NavigationLink(destination: SummaryView()) {
-                            Image(systemName: "text.line.3.summary")
+                            Image(systemName: "heart.text.square.fill")
                                 .font(.title)
                                 .foregroundColor(.ourDarkGrey)
                                 .padding(10)
@@ -126,8 +126,8 @@ struct MedicationsCard: View {
 
             // Header row
             HStack(spacing: 12) {
-                Image(systemName: "pills")
-                    .font(.system(size: 22))
+                Image(systemName: "pills.fill")
+                    .font(.title2)
                     .foregroundColor(.ourDarkGrey)
 
                 // "Medications" → localizable key
@@ -140,7 +140,7 @@ struct MedicationsCard: View {
                 // Add button (NavigationLink)
                 NavigationLink(destination: MedicationView()) {
                     Image(systemName: "plus")
-                        .font(.system(size: 20, weight: .semibold))
+                        .font(.title2)
                         .foregroundColor(.ourDarkGrey)
                 }
             }
@@ -202,7 +202,7 @@ struct MedicationsCard: View {
                     if medications.isEmpty {
                         VStack(spacing: 12) {
                             Image(systemName: "pills.circle")
-                                .font(.system(size: 40))
+                                .font(.largeTitle)
                                 .foregroundColor(.secondary)
 
                             // "No medications added yet" → localizable key
@@ -273,7 +273,7 @@ struct MealsCard: View {
         VStack(alignment: .leading, spacing: 16) {
             HStack(spacing: 12) {
                 Image(systemName: "fork.knife")
-                    .font(.system(size: 22))
+                    .font(.title2)
                     .foregroundColor(.ourDarkGrey)
                 
                 Text("Meals")
@@ -309,9 +309,8 @@ struct EmotionalStatusCard: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
             HStack(spacing: 12) {
-                Image(systemName: "heart.text.square.fill")
-                    .font(.system(size: 22))
-                    .foregroundColor(.ourDarkGrey)
+                Image(systemName: "apple.meditate.circle.fill")
+                    .font(.title2)                    .foregroundColor(.ourDarkGrey)
                 
                 Text("Emotional Status")
                     .font(.headline)
