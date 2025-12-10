@@ -3,7 +3,7 @@ import SwiftData
 
 struct MainPage: View {
     @StateObject private var viewModel = MainPageViewModel()
-    @State private var showMedications = true      // open by default (like the mock)
+    @State private var showMedications = true      // open by default
     @Query private var medications: [Medication]
     @Query private var emotionLogs: [EmotionLog]
     
