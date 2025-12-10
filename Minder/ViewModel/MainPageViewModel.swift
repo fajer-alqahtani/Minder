@@ -16,8 +16,12 @@ class MainPageViewModel: ObservableObject {
     init() {
         // 1) Create formatter
         let formatter = DateFormatter()
-        formatter.dateFormat = "EEEE, d MMMM"   // Monday, 17 November
-        formatter.locale = Locale(identifier: "en_US") // or Locale.current
+
+        // ✅ Let the system decide the language (for proper localization)
+        formatter.locale = .current
+
+        // ✅ Use a localization-safe date template instead of hard-coded English format
+        formatter.setLocalizedDateFormatFromTemplate("EEEE d MMMM")   // Monday, 17 November (localized)
 
         // 2) Format "now"
         let now = Date()
@@ -29,6 +33,7 @@ class MainPageViewModel: ObservableObject {
         // 4) Print to console (for debugging)
         print("Today is: \(dateString)")
     }
+
 
     
 //    var greeting: LocalizedStringKey {

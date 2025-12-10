@@ -1,5 +1,5 @@
 //
-//  Rectangle.swift
+//  MedicationCard.swift
 //  Minder
 //
 //  Created by Areeg Altaiyah on 01/12/2025.
@@ -10,6 +10,7 @@ struct MedicationCard: View {
     let medicationName: String
     let timeOfDay: TimeOfDay
     @State private var isSelected: Bool = false
+    var onDelete: (() -> Void)? = nil
     
     var body: some View {
         ZStack {
@@ -43,14 +44,24 @@ struct MedicationCard: View {
                     .foregroundStyle(.primary)
                     .lineLimit(1)
                 
-               
                 Spacer()
-
                 
+                // Delete button
+                if onDelete != nil {
+                    Button(action: {
+                        // Directly delegate to parent to present a single confirmation
+                        onDelete?()
+                    }) {
+                        Image(systemName: "xmark.circle.fill")
+                            .font(.system(size: 20))
+                            .foregroundStyle(.red.opacity(0.8))
+                    }
+                    .buttonStyle(.plain)
+                }
             }
             .padding(.horizontal, 8)
         }
-        .frame(height: 40)  // Only specify height, let grid control width
+        .frame(height: 40)
         .onTapGesture {
             withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
                 isSelected.toggle()
@@ -61,17 +72,22 @@ struct MedicationCard: View {
 
 // For use with SwiftData model - with explicit time context
 extension MedicationCard {
-    init(medication: Medication, displayTime: TimeOfDay, isSelected: Bool = false) {
+    init(medication: Medication, displayTime: TimeOfDay, isSelected: Bool = false, onDelete: (() -> Void)? = nil) {
         self.medicationName = medication.name
-        self.timeOfDay = displayTime  // Use the context time, not medication's timeOfDay
+        self.timeOfDay = displayTime
         self._isSelected = State(initialValue: isSelected)
+        self.onDelete = onDelete
     }
 }
 
 #Preview {
     VStack(spacing: 20) {
-        MedicationCard(medicationName: "Aspirin", timeOfDay: .morning)
-        MedicationCard(medicationName: "Vitamin D", timeOfDay: .night)
+        MedicationCard(medicationName: "Aspirin", timeOfDay: .morning, onDelete: {
+            print("Delete tapped")
+        })
+        MedicationCard(medicationName: "Vitamin D", timeOfDay: .night, onDelete: {
+            print("Delete tapped")
+        })
     }
     .padding()
 }

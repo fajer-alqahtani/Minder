@@ -62,14 +62,21 @@ struct MedicationView: View {
                     }
                     .padding(25)
                     
-                    .alert("Medication Added", isPresented: $showConfirmAlert) {
-                        Button("OK") {
+                    .alert(
+                        String(localized: "medication.alert.title"),
+                        isPresented: $showConfirmAlert
+                    ) {
+                        Button(String(localized: "common.ok")) {
                             viewModel.confirmMedication()
                             dismiss()
                         }
                     } message: {
-                        Text("\(viewModel.medicineName) added successfully!\nDosage: \(viewModel.dosage) pill(s)")
+                        // Build a localized format and then format with arguments
+                        let format = String(localized: "medication.alert.message")
+                        let message = String(format: format, locale: .current, viewModel.medicineName, viewModel.dosage)
+                        Text(message)
                     }
+
                 } else {
                     // Show loading indicator while the viewModel is loading
                     ProgressView()
@@ -79,7 +86,7 @@ struct MedicationView: View {
                 // Title
                 ToolbarItem(placement: .principal) {
                     Text("Add Medication").font(.title2.bold())
-                        .foregroundColor(.minderDark)
+                       
                 }
             }
         }
@@ -140,7 +147,7 @@ struct MedicineTimeSelector: View {
             
             if dosage >= 2 {
                 // Show multiple time selectors for each dose
-                ForEach(0..<dosage, id: \.self) { index in
+                ForEach(Array(0..<max(0, dosage)), id: \.self) { index in
                     VStack(alignment: .leading, spacing: 10) {
                         Text("\(ordinalText(for: index + 1)) Dosage Time")
                             .font(.title3)
@@ -148,7 +155,7 @@ struct MedicineTimeSelector: View {
                         
                         HStack {
                             TimeButton(
-                                title: TimeOfDay.morning.localizedTitle,
+                                title: TimeOfDay.morning.titleKey,
                                 icon: "sun.max.fill",
                                 iconColor: .yellow,
                                 isSelected: index < selectedTimes.count && selectedTimes[index] == .morning
@@ -159,7 +166,7 @@ struct MedicineTimeSelector: View {
                             Spacer()
                             
                             TimeButton(
-                                title: TimeOfDay.night.localizedTitle,
+                                title: TimeOfDay.night.titleKey,
                                 icon: "moon.fill",
                                 iconColor: .accentColor,
                                 isSelected: index < selectedTimes.count && selectedTimes[index] == .night
@@ -175,7 +182,7 @@ struct MedicineTimeSelector: View {
                 // Show original single time selector for dosage = 1
                 HStack {
                     TimeButton(
-                        title: TimeOfDay.morning.localizedTitle,
+                        title: TimeOfDay.morning.titleKey,
                         icon: "sun.max.fill",
                         iconColor: .yellow,
                         isSelected: selectedTime == .morning
@@ -186,7 +193,7 @@ struct MedicineTimeSelector: View {
                     Spacer()
                     
                     TimeButton(
-                        title: TimeOfDay.night.localizedTitle,
+                        title: TimeOfDay.night.titleKey,
                         icon: "moon.fill",
                         iconColor: .accentColor,
                         isSelected: selectedTime == .night
@@ -252,7 +259,7 @@ struct ConfirmButton: View {
     
     var body: some View {
         Button(action: action) {
-            Text("CONFIRM")
+            Text(String(localized: "confirm.button.title"))  // "CONFIRM"
                 .font(.title2)
                 .bold()
                 .foregroundStyle(Color.white)
@@ -264,6 +271,7 @@ struct ConfirmButton: View {
         .disabled(!isEnabled)
     }
 }
+
 
 #Preview {
     MedicationView()
