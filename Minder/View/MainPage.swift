@@ -444,7 +444,7 @@ struct MedicationCardWrapper: View {
 
 // MARK: - MEALS CARD
 
-struct MealsCard: View {
+struct MealsCardPlaceholder: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
             HStack(spacing: 12) {
