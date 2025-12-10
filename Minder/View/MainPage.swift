@@ -11,7 +11,7 @@ struct DoseEntry: Identifiable {
 
 struct MainPage: View {
     @StateObject private var viewModel = MainPageViewModel()
-    @State private var showMedications = true
+    @State private var showMedications = true      // open by default
     @Query private var medications: [Medication]
     @Query private var emotionLogs: [EmotionLog]
     @Query private var medicationLogs: [MedicationLog]
