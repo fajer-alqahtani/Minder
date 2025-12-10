@@ -17,8 +17,6 @@ struct MainPage: View {
     @Query private var medications: [Medication]
     @Query private var emotionLogs: [EmotionLog]
     @Query private var medicationLogs: [MedicationLog]
-    @Environment(\.modelContext) private var modelContext
-    @AppStorage("lastCheckedDate") private var lastCheckedDateString = ""
     
     // Create individual dose entries
     private var morningDoses: [DoseEntry] {
