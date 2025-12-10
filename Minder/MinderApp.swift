@@ -13,6 +13,8 @@ struct MinderApp: App {
     var sharedModelContainer: ModelContainer = {
         let schema = Schema([
             Medication.self,
+            MedicationLog.self,  // ⬅️ ADDED
+            EmotionLog.self      // ⬅️ ADDED (if you have this model)
         ])
         let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
 
