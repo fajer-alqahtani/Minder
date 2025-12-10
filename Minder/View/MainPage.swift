@@ -485,8 +485,10 @@ struct EmotionalStatusCard: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
             HStack(spacing: 12) {
-                Image(systemName: "apple.meditate.circle.fill")
-                    .font(.title2)                    .foregroundColor(.ourDarkGrey)
+                Image(systemName: "apple.meditate")
+                    .font(.title2)
+                    .bold()
+                    .foregroundColor(.ourDarkGrey)
                 
                 Text("Emotional Status")
                     .font(.headline)
