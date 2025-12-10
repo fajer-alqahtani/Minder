@@ -12,17 +12,19 @@ import SwiftData
 final class MedicationLog {
     var id: UUID
     var medicationName: String
-    var medicationId: UUID  // Reference to original medication
+    var medicationId: UUID
     var timeOfDay: TimeOfDay
-    var wasTaken: Bool  // Whether it was checked or not
-    var date: Date  // Which day this log is for
+    var doseIndex: Int  // Which dose this is (0, 1, 2, etc.)
+    var wasTaken: Bool
+    var date: Date
     
-    init(medicationName: String, medicationId: UUID, timeOfDay: TimeOfDay, wasTaken: Bool, date: Date = Date()) {
+    init(medicationName: String, medicationId: UUID, timeOfDay: TimeOfDay, doseIndex: Int = 0, wasTaken: Bool, date: Date = Date()) {
         self.id = UUID()
         self.medicationName = medicationName
         self.medicationId = medicationId
         self.timeOfDay = timeOfDay
+        self.doseIndex = doseIndex
         self.wasTaken = wasTaken
-        self.date = Calendar.current.startOfDay(for: date)  // Normalize to start of day
+        self.date = Calendar.current.startOfDay(for: date)
     }
 }
