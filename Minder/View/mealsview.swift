@@ -9,6 +9,22 @@ enum AmountEaten: String, CaseIterable, Identifiable {
     var id: String { rawValue }
 }
 
+// 🔹 Localization helper for the enum
+extension AmountEaten {
+    var localizationKey: String.LocalizationValue {
+        switch self {
+        case .ateAll:
+            return "Ate All"
+        case .ateHalf:
+            return "Ate Half"
+        case .didNotEat:
+            return "Did Not Eat"
+        }
+    }
+}
+
+
+
 // MARK: - MEALS CARD (small + clean + fits like the screenshot)
 
 struct MealsCard: View {
@@ -23,7 +39,7 @@ struct MealsCard: View {
                     .font(.system(size: 20))
                     .foregroundColor(.ourDarkGrey)
 
-                Text("Meals")
+                Text(String(localized: "meal.title"))   // was "Meals"
                     .font(.headline)
                     .foregroundColor(.ourDarkGrey)
 
@@ -31,7 +47,7 @@ struct MealsCard: View {
             }
 
             // Subtitle
-            Text("How much did they eat?")
+            Text(String(localized: "meal.howMuch"))      // was "How much did they eat?"
                 .font(.subheadline)
                 .foregroundColor(.secondary)
 
@@ -57,7 +73,7 @@ struct MealsCard: View {
         return Button {
             amount = option
         } label: {
-            Text(option.rawValue)
+            Text(String(localized: option.localizationKey))
                 .font(.system(size: 14, weight: .semibold))
                 .foregroundColor(
                     isSelected ? .ourDarkGrey : .ourDarkGrey.opacity(0.7)
@@ -76,6 +92,7 @@ struct MealsCard: View {
                         )
                 )
         }
+
         .buttonStyle(.plain)
     }
 }
@@ -85,4 +102,5 @@ struct MealsCard: View {
         .padding()
         .background(Color(.systemGroupedBackground))
 }
+
 
