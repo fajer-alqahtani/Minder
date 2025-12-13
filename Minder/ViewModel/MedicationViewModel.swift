@@ -6,6 +6,8 @@ import SwiftData
 class MedicationViewModel {
     var medicineName: String = ""
     var dosage: Int = 1
+    var amount: String = ""
+    var selectedUnit: MedicationUnit = .mg
     var selectedTime: TimeOfDay? = nil
     var selectedTimes: [TimeOfDay?] = []
     
@@ -16,23 +18,27 @@ class MedicationViewModel {
     }
     
     var isConfirmEnabled: Bool {
+        let hasAmount = !amount.isEmpty && (Int(amount) ?? 0) > 0
+        
         if dosage < 2 {
-            return !medicineName.isEmpty && dosage > 0 && selectedTime != nil
+            return !medicineName.isEmpty && dosage > 0 && hasAmount && selectedTime != nil
         } else {
-            // Allow duplicates, just check all slots are filled
-            return !medicineName.isEmpty && dosage > 0 &&
+            return !medicineName.isEmpty && dosage > 0 && hasAmount &&
                    selectedTimes.count == dosage &&
                    selectedTimes.allSatisfy { $0 != nil }
         }
     }
     
     func confirmMedication() {
+        let parsedAmount = Int(amount) ?? 0
         let medication: Medication
         
         if dosage < 2 {
             medication = Medication(
                 name: medicineName,
                 dosage: dosage,
+                amount: parsedAmount,
+                unit: selectedUnit,
                 timeOfDay: selectedTime
             )
         } else {
@@ -40,6 +46,8 @@ class MedicationViewModel {
             medication = Medication(
                 name: medicineName,
                 dosage: dosage,
+                amount: parsedAmount,
+                unit: selectedUnit,
                 dosageTimes: times
             )
         }
@@ -53,10 +61,10 @@ class MedicationViewModel {
         do {
             try modelContext.save()
             if dosage < 2 {
-                print("✅ SAVE SUCCESS: \(medication.name) - \(medication.dosage) pill - \(medication.timeOfDay?.rawValue ?? "No time")")
+                print("✅ SAVE SUCCESS: \(medication.name) - \(medication.amount)\(medication.unit.displayName) - \(medication.dosage) pill - \(medication.timeOfDay?.rawValue ?? "No time")")
             } else {
                 let timesStr = medication.dosageTimes.map { $0.rawValue }.joined(separator: ", ")
-                print("✅ SAVE SUCCESS: \(medication.name) - \(medication.dosage) pills - Times: \(timesStr)")
+                print("✅ SAVE SUCCESS: \(medication.name) - \(medication.amount)\(medication.unit.displayName) - \(medication.dosage) pills - Times: \(timesStr)")
             }
             
             let descriptor = FetchDescriptor<Medication>()
@@ -64,10 +72,10 @@ class MedicationViewModel {
             print("📊 Total medications in context: \(allMeds.count)")
             for med in allMeds {
                 if med.dosage < 2 {
-                    print("   - \(med.name) (\(med.timeOfDay?.rawValue ?? "nil"))")
+                    print("   - \(med.name) \(med.amount)\(med.unit.displayName) (\(med.timeOfDay?.rawValue ?? "nil"))")
                 } else {
                     let times = med.dosageTimes.map { $0.rawValue }.joined(separator: ", ")
-                    print("   - \(med.name) (Times: \(times))")
+                    print("   - \(med.name) \(med.amount)\(med.unit.displayName) (Times: \(times))")
                 }
             }
         } catch {
@@ -82,7 +90,6 @@ class MedicationViewModel {
     }
     
     func selectTimeForDosage(index: Int, time: TimeOfDay) {
-        // Allow duplicates - morning, morning, night is valid
         while selectedTimes.count <= index {
             selectedTimes.append(nil)
         }
@@ -92,6 +99,8 @@ class MedicationViewModel {
     func resetForm() {
         medicineName = ""
         dosage = 1
+        amount = ""
+        selectedUnit = .mg
         selectedTime = nil
         selectedTimes = []
     }

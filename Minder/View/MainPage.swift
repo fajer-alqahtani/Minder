@@ -12,13 +12,12 @@ struct DoseEntry: Identifiable {
 struct MainPage: View {
     @Environment(\.modelContext) private var modelContext
     @StateObject private var viewModel = MainPageViewModel()
-    @State private var showMedications = true      // open by default
+    @State private var showMedications = true
     @AppStorage("lastCheckedDateString") private var lastCheckedDateString: String = ""
     @Query private var medications: [Medication]
     @Query private var emotionLogs: [EmotionLog]
     @Query private var medicationLogs: [MedicationLog]
     
-    // Create individual dose entries for each time of day
     private var morningDoses: [DoseEntry] {
         getDoses(for: .morning)
     }
@@ -35,7 +34,6 @@ struct MainPage: View {
         getDoses(for: .night)
     }
     
-    // Helper function to get doses for a specific time
     private func getDoses(for time: TimeOfDay) -> [DoseEntry] {
         var doses: [DoseEntry] = []
         
@@ -83,7 +81,6 @@ struct MainPage: View {
                         
                         Spacer()
                         
-                        // Top-right navigation icon button
                         NavigationLink(destination: SummaryView()) {
                             Image(systemName: "heart.text.square.fill")
                                 .font(.title)
@@ -124,10 +121,10 @@ struct MainPage: View {
                 
                 for med in medications {
                     if med.dosage < 2 {
-                        print("   - \(med.name): \(med.dosage) pill, time: \(med.timeOfDay?.rawValue ?? "nil")")
+                        print("   - \(med.name): \(med.amount)\(med.unit.displayName), \(med.dosage) pill, time: \(med.timeOfDay?.rawValue ?? "nil")")
                     } else {
                         let times = med.dosageTimes.map { $0.rawValue }.joined(separator: ", ")
-                        print("   - \(med.name): \(med.dosage) pills, times: [\(times)]")
+                        print("   - \(med.name): \(med.amount)\(med.unit.displayName), \(med.dosage) pills, times: [\(times)]")
                     }
                 }
                 
@@ -185,11 +182,13 @@ struct MainPage: View {
                         medicationId: medication.id,
                         timeOfDay: time,
                         doseIndex: doseIndex,
+                        amount: medication.amount,
+                        unit: medication.unit,
                         wasTaken: false,
                         date: yesterday
                     )
                     modelContext.insert(missedLog)
-                    print("❌ Created 'not taken' log: \(medication.name) - \(time.rawValue) dose #\(doseIndex + 1) for yesterday")
+                    print("❌ Created 'not taken' log: \(medication.name) \(medication.amount)\(medication.unit.displayName) - \(time.rawValue) dose #\(doseIndex + 1) for yesterday")
                 }
             }
         }
@@ -218,7 +217,6 @@ struct MedicationsCard: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
 
-            // Header row
             HStack(spacing: 12) {
                 Image(systemName: "pills.fill")
                     .font(.title2)
@@ -240,7 +238,6 @@ struct MedicationsCard: View {
             if showMedications {
                 VStack(alignment: .leading, spacing: 16) {
 
-                    // Morning section
                     if !morningDoses.isEmpty {
                         DoseTimeSection(
                             timeOfDay: .morning,
@@ -255,7 +252,6 @@ struct MedicationsCard: View {
                         )
                     }
                     
-                    // Afternoon section
                     if !afternoonDoses.isEmpty {
                         DoseTimeSection(
                             timeOfDay: .afternoon,
@@ -270,7 +266,6 @@ struct MedicationsCard: View {
                         )
                     }
                     
-                    // Evening section
                     if !eveningDoses.isEmpty {
                         DoseTimeSection(
                             timeOfDay: .evening,
@@ -285,7 +280,6 @@ struct MedicationsCard: View {
                         )
                     }
 
-                    // Night section
                     if !nightDoses.isEmpty {
                         DoseTimeSection(
                             timeOfDay: .night,
@@ -300,7 +294,6 @@ struct MedicationsCard: View {
                         )
                     }
 
-                    // Empty state
                     if medications.isEmpty {
                         VStack(spacing: 12) {
                             Image(systemName: "pills.circle")
@@ -361,7 +354,7 @@ struct MedicationsCard: View {
     }
 }
 
-// MARK: - Dose Time Section (Reusable component for each time of day)
+// MARK: - Dose Time Section
 
 struct DoseTimeSection: View {
     let timeOfDay: TimeOfDay
@@ -414,6 +407,8 @@ struct MedicationCardWrapper: View {
             medicationId: dose.medication.id,
             timeOfDay: dose.timeOfDay,
             doseIndex: dose.doseIndex,
+            amount: dose.medication.amount,
+            unit: dose.medication.unit,
             isSelected: $isSelected,
             onToggle: { newValue in
                 handleToggle(newValue)
@@ -466,18 +461,20 @@ struct MedicationCardWrapper: View {
             Calendar.current.isDate(log.date, inSameDayAs: today)
         }) {
             existingLog.wasTaken = newValue
-            print("📝 Updated log: \(dose.medication.name) dose #\(dose.doseIndex + 1) - \(newValue ? "taken" : "not taken")")
+            print("📝 Updated log: \(dose.medication.name) \(dose.medication.amount)\(dose.medication.unit.displayName) dose #\(dose.doseIndex + 1) - \(newValue ? "taken" : "not taken")")
         } else {
             let newLog = MedicationLog(
                 medicationName: dose.medication.name,
                 medicationId: dose.medication.id,
                 timeOfDay: dose.timeOfDay,
                 doseIndex: dose.doseIndex,
+                amount: dose.medication.amount,
+                unit: dose.medication.unit,
                 wasTaken: newValue,
                 date: today
             )
             modelContext.insert(newLog)
-            print("✅ Created log: \(dose.medication.name) dose #\(dose.doseIndex + 1) - \(newValue ? "taken" : "not taken")")
+            print("✅ Created log: \(dose.medication.name) \(dose.medication.amount)\(dose.medication.unit.displayName) dose #\(dose.doseIndex + 1) - \(newValue ? "taken" : "not taken")")
         }
         
         try? modelContext.save()

@@ -2,14 +2,26 @@ import Foundation
 import SwiftData
 import SwiftUI
 
-// --- THE DATA ENUM ---
+// --- MEDICATION UNIT ENUM ---
+enum MedicationUnit: String, CaseIterable, Codable {
+    case mg
+    case ml
+    
+    var displayName: String {
+        switch self {
+        case .mg: return "mg"
+        case .ml: return "ml"
+        }
+    }
+}
+
+// --- TIME OF DAY ENUM ---
 enum TimeOfDay: String, CaseIterable, Codable {
     case morning
     case afternoon
     case evening
     case night
     
-    /// For SwiftUI Text – use in Text(...)
     var titleKey: LocalizedStringKey {
         switch self {
         case .morning:   return "Morning"
@@ -19,7 +31,6 @@ enum TimeOfDay: String, CaseIterable, Codable {
         }
     }
     
-    /// For String(format: ...) and alerts – real localized String
     var titleString: String {
         switch self {
         case .morning:   return String(localized: "Morning")
@@ -29,7 +40,6 @@ enum TimeOfDay: String, CaseIterable, Codable {
         }
     }
     
-    /// Icon for each time of day
     var icon: String {
         switch self {
         case .morning:   return "sun.max.fill"
@@ -39,7 +49,6 @@ enum TimeOfDay: String, CaseIterable, Codable {
         }
     }
     
-    /// Color for each time of day
     var color: Color {
         switch self {
         case .morning:   return .yellow
@@ -50,21 +59,24 @@ enum TimeOfDay: String, CaseIterable, Codable {
     }
 }
 
-
 // --- THE SWIFTDATA MODEL ---
 @Model
 final class Medication {
     var id: UUID
     var name: String
     var dosage: Int
-    var timeOfDay: TimeOfDay?  // For single dose (dosage = 1)
-    var dosageTimes: [TimeOfDay]  // For multiple doses (dosage >= 2)
+    var amount: Int
+    var unit: MedicationUnit
+    var timeOfDay: TimeOfDay?
+    var dosageTimes: [TimeOfDay]
     var timestamp: Date
 
-    init(name: String, dosage: Int, timeOfDay: TimeOfDay? = nil, dosageTimes: [TimeOfDay] = []) {
+    init(name: String, dosage: Int, amount: Int = 0, unit: MedicationUnit = .mg, timeOfDay: TimeOfDay? = nil, dosageTimes: [TimeOfDay] = []) {
         self.id = UUID()
         self.name = name
         self.dosage = dosage
+        self.amount = amount
+        self.unit = unit
         self.timeOfDay = timeOfDay
         self.dosageTimes = dosageTimes
         self.timestamp = Date()

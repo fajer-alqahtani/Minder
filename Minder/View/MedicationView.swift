@@ -9,7 +9,6 @@ struct MedicationView: View {
 
     var body: some View {
         NavigationStack {
-            
             Group {
                 if let viewModel {
                     VStack {
@@ -20,10 +19,23 @@ struct MedicationView: View {
                                     set: { viewModel.medicineName = $0 }
                                 ))
                                 
+                                
+                                
                                 MedicineDosageControl(dosage: Binding(
                                     get: { viewModel.dosage },
                                     set: { viewModel.dosage = $0 }
                                 ))
+                                
+                                MedicineAmountField(
+                                    amount: Binding(
+                                        get: { viewModel.amount },
+                                        set: { viewModel.amount = $0 }
+                                    ),
+                                    unit: Binding(
+                                        get: { viewModel.selectedUnit },
+                                        set: { viewModel.selectedUnit = $0 }
+                                    )
+                                )
                                 
                                 MedicineTimeSelector(
                                     selectedTime: Binding(
@@ -105,12 +117,51 @@ struct MedicineNameField: View {
     }
 }
 
+struct MedicineAmountField: View {
+    @Binding var amount: String
+    @Binding var unit: MedicationUnit
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Amount").font(.title3).bold()
+            
+            HStack(spacing: 12) {
+                TextField("500", text: $amount)
+                    .keyboardType(.numberPad)
+                    .padding()
+                    .frame(maxWidth: .infinity)
+                    .background(Color.accentColor.opacity(0.10))
+                    .cornerRadius(12)
+                
+                HStack(spacing: 0) {
+                    ForEach(MedicationUnit.allCases, id: \.self) { unitOption in
+                        Button(action: {
+                            withAnimation(.easeInOut(duration: 0.2)) {
+                                unit = unitOption
+                            }
+                        }) {
+                            Text(unitOption.displayName)
+                                .font(.subheadline)
+                                .bold()
+                                .foregroundStyle(unit == unitOption ? .white : .primary)
+                                .frame(width: 50, height: 50)
+                                .background(unit == unitOption ? Color.ourGrey : Color.accentColor.opacity(0.1))
+                        }
+                    }
+                }
+                .cornerRadius(12)
+            }
+        }
+        .padding(.bottom, 20)
+    }
+}
+
 struct MedicineDosageControl: View {
     @Binding var dosage: Int
     
     var body: some View {
         HStack {
-            Text("Dosage").font(.title3).bold()
+            Text("Medication").font(.title3).bold()
             LabeledStepper("", description: "", value: $dosage)
                 .font(.title3).bold()
         }
@@ -134,7 +185,7 @@ struct MedicineTimeSelector: View {
             if dosage >= 2 {
                 ForEach(Array(0..<max(0, dosage)), id: \.self) { index in
                     VStack(alignment: .leading, spacing: 10) {
-                        Text("\(ordinalText(for: index + 1)) Dosage Time")
+                        Text("\(ordinalText(for: index + 1)) Medication Time")
                             .font(.title3)
                             .fontWeight(.semibold)
                         
@@ -177,7 +228,6 @@ struct TimeButtonGrid: View {
     
     var body: some View {
         VStack(spacing: 12) {
-            // Top row: Morning & Afternoon
             HStack(spacing: 12) {
                 TimeButton(
                     title: TimeOfDay.morning.titleKey,
@@ -198,7 +248,6 @@ struct TimeButtonGrid: View {
                 }
             }
             
-            // Bottom row: Evening & Night
             HStack(spacing: 12) {
                 TimeButton(
                     title: TimeOfDay.evening.titleKey,
