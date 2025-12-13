@@ -1,10 +1,3 @@
-//
-//  MedicationLog.swift
-//  Minder
-//
-//  Created by Areeg Altaiyah on 09/12/2025.
-//
-
 import Foundation
 import SwiftData
 

@@ -64,22 +64,18 @@ struct MedicationView: View {
                             dismiss()
                         }
                     } message: {
-                        // Build a localized format and then format with arguments
                         let format = String(localized: "medication.alert.message")
                         let message = String(format: format, locale: .current, viewModel.medicineName, viewModel.dosage)
                         Text(message)
                     }
 
                 } else {
-                    // Show loading indicator while the viewModel is loading
                     ProgressView()
                 }
             }
             .toolbar {
-                // Title
                 ToolbarItem(placement: .principal) {
                     Text("Add Medication").font(.title2.bold())
-                       
                 }
             }
         }
@@ -92,10 +88,8 @@ struct MedicationView: View {
 }
 
 
-
-
-
 // MARK: - Subviews
+
 struct MedicineNameField: View {
     @Binding var name: String
     
@@ -133,72 +127,32 @@ struct MedicineTimeSelector: View {
     
     var body: some View {
         VStack(alignment: .leading, spacing: 15) {
-            // Only show "Time" title when dosage is 1
             if dosage < 2 {
                 Text("Time").font(.title3).bold()
             }
             
             if dosage >= 2 {
-                // Show multiple time selectors for each dose
                 ForEach(Array(0..<max(0, dosage)), id: \.self) { index in
                     VStack(alignment: .leading, spacing: 10) {
                         Text("\(ordinalText(for: index + 1)) Dosage Time")
                             .font(.title3)
                             .fontWeight(.semibold)
                         
-                        HStack {
-                            TimeButton(
-                                title: TimeOfDay.morning.titleKey,
-                                icon: "sun.max.fill",
-                                iconColor: .yellow,
-                                isSelected: index < selectedTimes.count && selectedTimes[index] == .morning
-                            ) {
-                                onSelectForDosage(index, .morning)
-                            }
-                            
-                            Spacer()
-                            
-                            TimeButton(
-                                title: TimeOfDay.night.titleKey,
-                                icon: "moon.fill",
-                                iconColor: .accentColor,
-                                isSelected: index < selectedTimes.count && selectedTimes[index] == .night
-                            ) {
-                                onSelectForDosage(index, .night)
-                            }
+                        TimeButtonGrid(
+                            selectedTime: index < selectedTimes.count ? selectedTimes[index] : nil
+                        ) { time in
+                            onSelectForDosage(index, time)
                         }
-                        .padding(.horizontal, 25)
                     }
                     .padding(.bottom, 10)
                 }
             } else {
-                // Show original single time selector for dosage = 1
-                HStack {
-                    TimeButton(
-                        title: TimeOfDay.morning.titleKey,
-                        icon: "sun.max.fill",
-                        iconColor: .yellow,
-                        isSelected: selectedTime == .morning
-                    ) {
-                        onSelect(.morning)
-                    }
-                    
-                    Spacer()
-                    
-                    TimeButton(
-                        title: TimeOfDay.night.titleKey,
-                        icon: "moon.fill",
-                        iconColor: .accentColor,
-                        isSelected: selectedTime == .night
-                    ) {
-                        onSelect(.night)
-                    }
+                TimeButtonGrid(selectedTime: selectedTime) { time in
+                    onSelect(time)
                 }
-                .padding(.horizontal, 25)
             }
         }
         .onChange(of: dosage) { oldValue, newValue in
-            // Initialize selectedTimes array when dosage changes
             if newValue >= 2 {
                 selectedTimes = Array(repeating: nil, count: newValue)
             } else {
@@ -207,7 +161,6 @@ struct MedicineTimeSelector: View {
         }
     }
     
-    // Helper function to convert numbers to ordinal text
     private func ordinalText(for number: Int) -> String {
         let formatter = NumberFormatter()
         formatter.numberStyle = .ordinal
@@ -215,6 +168,62 @@ struct MedicineTimeSelector: View {
     }
 }
 
+
+// MARK: - Time Button Grid (2x2 layout)
+
+struct TimeButtonGrid: View {
+    let selectedTime: TimeOfDay?
+    let onSelect: (TimeOfDay) -> Void
+    
+    var body: some View {
+        VStack(spacing: 12) {
+            // Top row: Morning & Afternoon
+            HStack(spacing: 12) {
+                TimeButton(
+                    title: TimeOfDay.morning.titleKey,
+                    icon: TimeOfDay.morning.icon,
+                    iconColor: TimeOfDay.morning.color,
+                    isSelected: selectedTime == .morning
+                ) {
+                    onSelect(.morning)
+                }
+                
+                TimeButton(
+                    title: TimeOfDay.afternoon.titleKey,
+                    icon: TimeOfDay.afternoon.icon,
+                    iconColor: TimeOfDay.afternoon.color,
+                    isSelected: selectedTime == .afternoon
+                ) {
+                    onSelect(.afternoon)
+                }
+            }
+            
+            // Bottom row: Evening & Night
+            HStack(spacing: 12) {
+                TimeButton(
+                    title: TimeOfDay.evening.titleKey,
+                    icon: TimeOfDay.evening.icon,
+                    iconColor: TimeOfDay.evening.color,
+                    isSelected: selectedTime == .evening
+                ) {
+                    onSelect(.evening)
+                }
+                
+                TimeButton(
+                    title: TimeOfDay.night.titleKey,
+                    icon: TimeOfDay.night.icon,
+                    iconColor: TimeOfDay.night.color,
+                    isSelected: selectedTime == .night
+                ) {
+                    onSelect(.night)
+                }
+            }
+        }
+    }
+}
+
+
+// MARK: - Time Button
 
 struct TimeButton: View {
     let title: LocalizedStringKey
@@ -227,24 +236,28 @@ struct TimeButton: View {
         Button(action: action) {
             Label {
                 Text(title)
-                    .font(.title3)
+                    .font(.subheadline)
                     .bold()
                     .foregroundStyle(Color.primary)
             } icon: {
                 Image(systemName: icon)
                     .foregroundStyle(iconColor)
-                    .font(.title3).bold()
+                    .font(.subheadline).bold()
             }
         }
-        .frame(width: 148, height: 56)
+        .frame(maxWidth: .infinity)
+        .frame(height: 50)
         .background(isSelected ? iconColor.opacity(0.2) : Color.accentColor.opacity(0.1))
-        .cornerRadius(65)
+        .cornerRadius(25)
         .overlay(
-            RoundedRectangle(cornerRadius: 65)
+            RoundedRectangle(cornerRadius: 25)
                 .stroke(isSelected ? iconColor : Color.clear, lineWidth: 3)
         )
     }
 }
+
+
+// MARK: - Confirm Button
 
 struct ConfirmButton: View {
     let isEnabled: Bool
@@ -252,7 +265,7 @@ struct ConfirmButton: View {
     
     var body: some View {
         Button(action: action) {
-            Text(String(localized: "confirm.button.title"))  // "CONFIRM"
+            Text(String(localized: "confirm.button.title"))
                 .font(.title2)
                 .bold()
                 .foregroundStyle(Color.white)

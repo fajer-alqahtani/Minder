@@ -19,7 +19,7 @@ class MedicationViewModel {
         if dosage < 2 {
             return !medicineName.isEmpty && dosage > 0 && selectedTime != nil
         } else {
-            // ⬅️ CHANGED: Allow duplicates, just check all slots are filled
+            // Allow duplicates, just check all slots are filled
             return !medicineName.isEmpty && dosage > 0 &&
                    selectedTimes.count == dosage &&
                    selectedTimes.allSatisfy { $0 != nil }
@@ -82,7 +82,7 @@ class MedicationViewModel {
     }
     
     func selectTimeForDosage(index: Int, time: TimeOfDay) {
-        // ⬅️ REMOVED: Duplicate prevention - now allows morning, morning, night
+        // Allow duplicates - morning, morning, night is valid
         while selectedTimes.count <= index {
             selectedTimes.append(nil)
         }

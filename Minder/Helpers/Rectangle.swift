@@ -18,17 +18,17 @@ struct MedicationCard: View {
     
     var body: some View {
         ZStack {
-            // The rounded rectangle
+            // The rounded rectangle - uses TimeOfDay color
             Rectangle()
                 .cornerRadius(50)
-                .foregroundStyle(timeOfDay == .morning ? Color.ourYellow.opacity(0.2): Color.accentColor.opacity(0.2))
+                .foregroundStyle(timeOfDay.color.opacity(0.2))
             
             HStack(spacing: 1) {
                 // The circle with checkmark
                 ZStack {
                     Circle()
                         .frame(width: 30, height: 30)
-                        .foregroundStyle(isSelected ? Color.ourGrey : (timeOfDay == .morning) ? Color.ourYellow.opacity(0.6) : Color.accentColor.opacity(0.2))
+                        .foregroundStyle(isSelected ? Color.ourGrey : timeOfDay.color.opacity(0.6))
                     
                     // Checkmark icon
                     if isSelected {
@@ -37,10 +37,11 @@ struct MedicationCard: View {
                             .font(.system(.title3))
                     }
                 }
-                // Time of day icon
-                Image(systemName: timeOfDay == .morning ? "sun.max.fill" : "moon.fill")
+                
+                // Time of day icon - uses TimeOfDay icon and color
+                Image(systemName: timeOfDay.icon)
                     .font(.system(.caption))
-                    .foregroundStyle(timeOfDay == .morning ? Color.ourYellow : Color.accentColor)
+                    .foregroundStyle(timeOfDay.color)
                 
                 // Medication name
                 Text(medicationName)
@@ -75,7 +76,7 @@ struct MedicationCard: View {
 }
 
 #Preview {
-    VStack(spacing: 20) {
+    VStack(spacing: 12) {
         MedicationCard(
             medicationName: "Aspirin",
             medicationId: UUID(),
@@ -86,6 +87,22 @@ struct MedicationCard: View {
         )
         MedicationCard(
             medicationName: "Vitamin D",
+            medicationId: UUID(),
+            timeOfDay: .afternoon,
+            doseIndex: 0,
+            isSelected: .constant(true),
+            onDelete: { print("Delete tapped") }
+        )
+        MedicationCard(
+            medicationName: "Omega 3",
+            medicationId: UUID(),
+            timeOfDay: .evening,
+            doseIndex: 0,
+            isSelected: .constant(false),
+            onDelete: { print("Delete tapped") }
+        )
+        MedicationCard(
+            medicationName: "Melatonin",
             medicationId: UUID(),
             timeOfDay: .night,
             doseIndex: 0,

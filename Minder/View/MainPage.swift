@@ -18,53 +18,42 @@ struct MainPage: View {
     @Query private var emotionLogs: [EmotionLog]
     @Query private var medicationLogs: [MedicationLog]
     
-    // Create individual dose entries
+    // Create individual dose entries for each time of day
     private var morningDoses: [DoseEntry] {
-        var doses: [DoseEntry] = []
-        
-        for medication in medications {
-            if medication.dosage < 2 {
-                if medication.timeOfDay == .morning {
-                    doses.append(DoseEntry(
-                        medication: medication,
-                        timeOfDay: .morning,
-                        doseIndex: 0
-                    ))
-                }
-            } else {
-                for (index, time) in medication.dosageTimes.enumerated() {
-                    if time == .morning {
-                        doses.append(DoseEntry(
-                            medication: medication,
-                            timeOfDay: .morning,
-                            doseIndex: index
-                        ))
-                    }
-                }
-            }
-        }
-        
-        return doses
+        getDoses(for: .morning)
+    }
+    
+    private var afternoonDoses: [DoseEntry] {
+        getDoses(for: .afternoon)
+    }
+    
+    private var eveningDoses: [DoseEntry] {
+        getDoses(for: .evening)
     }
     
     private var nightDoses: [DoseEntry] {
+        getDoses(for: .night)
+    }
+    
+    // Helper function to get doses for a specific time
+    private func getDoses(for time: TimeOfDay) -> [DoseEntry] {
         var doses: [DoseEntry] = []
         
         for medication in medications {
             if medication.dosage < 2 {
-                if medication.timeOfDay == .night {
+                if medication.timeOfDay == time {
                     doses.append(DoseEntry(
                         medication: medication,
-                        timeOfDay: .night,
+                        timeOfDay: time,
                         doseIndex: 0
                     ))
                 }
             } else {
-                for (index, time) in medication.dosageTimes.enumerated() {
-                    if time == .night {
+                for (index, medTime) in medication.dosageTimes.enumerated() {
+                    if medTime == time {
                         doses.append(DoseEntry(
                             medication: medication,
-                            timeOfDay: .night,
+                            timeOfDay: time,
                             doseIndex: index
                         ))
                     }
@@ -110,6 +99,8 @@ struct MainPage: View {
                         showMedications: $showMedications,
                         medications: medications,
                         morningDoses: morningDoses,
+                        afternoonDoses: afternoonDoses,
+                        eveningDoses: eveningDoses,
                         nightDoses: nightDoses,
                         medicationLogs: medicationLogs
                     )
@@ -141,6 +132,8 @@ struct MainPage: View {
                 }
                 
                 print("🌅 Morning doses: \(morningDoses.count)")
+                print("☀️ Afternoon doses: \(afternoonDoses.count)")
+                print("🌆 Evening doses: \(eveningDoses.count)")
                 print("🌙 Night doses: \(nightDoses.count)")
                 
                 print("🧠 Emotion logs stored:", emotionLogs.count)
@@ -214,6 +207,8 @@ struct MedicationsCard: View {
     @Binding var showMedications: Bool
     let medications: [Medication]
     let morningDoses: [DoseEntry]
+    let afternoonDoses: [DoseEntry]
+    let eveningDoses: [DoseEntry]
     let nightDoses: [DoseEntry]
     let medicationLogs: [MedicationLog]
     @State private var showDeleteAlert = false
@@ -247,52 +242,62 @@ struct MedicationsCard: View {
 
                     // Morning section
                     if !morningDoses.isEmpty {
-                        VStack(alignment: .leading, spacing: 8) {
-
-                            Text(TimeOfDay.morning.titleKey)
-                                .font(.subheadline.weight(.semibold))
-                                .foregroundColor(.secondary)
-
-                            VStack(spacing: 8) {
-                                ForEach(morningDoses) { dose in
-                                    MedicationCardWrapper(
-                                        dose: dose,
-                                        medicationLogs: medicationLogs,
-                                        modelContext: modelContext,
-                                        onDelete: {
-                                            medicationToDelete = dose.medication
-                                            doseIndexToDelete = dose.doseIndex
-                                            showDeleteAlert = true
-                                        }
-                                    )
-                                }
+                        DoseTimeSection(
+                            timeOfDay: .morning,
+                            doses: morningDoses,
+                            medicationLogs: medicationLogs,
+                            modelContext: modelContext,
+                            onDelete: { dose in
+                                medicationToDelete = dose.medication
+                                doseIndexToDelete = dose.doseIndex
+                                showDeleteAlert = true
                             }
-                        }
+                        )
+                    }
+                    
+                    // Afternoon section
+                    if !afternoonDoses.isEmpty {
+                        DoseTimeSection(
+                            timeOfDay: .afternoon,
+                            doses: afternoonDoses,
+                            medicationLogs: medicationLogs,
+                            modelContext: modelContext,
+                            onDelete: { dose in
+                                medicationToDelete = dose.medication
+                                doseIndexToDelete = dose.doseIndex
+                                showDeleteAlert = true
+                            }
+                        )
+                    }
+                    
+                    // Evening section
+                    if !eveningDoses.isEmpty {
+                        DoseTimeSection(
+                            timeOfDay: .evening,
+                            doses: eveningDoses,
+                            medicationLogs: medicationLogs,
+                            modelContext: modelContext,
+                            onDelete: { dose in
+                                medicationToDelete = dose.medication
+                                doseIndexToDelete = dose.doseIndex
+                                showDeleteAlert = true
+                            }
+                        )
                     }
 
                     // Night section
                     if !nightDoses.isEmpty {
-                        VStack(alignment: .leading, spacing: 8) {
-
-                            Text(TimeOfDay.night.titleKey)
-                                .font(.subheadline.weight(.semibold))
-                                .foregroundColor(.secondary)
-
-                            VStack(spacing: 8) {
-                                ForEach(nightDoses) { dose in
-                                    MedicationCardWrapper(
-                                        dose: dose,
-                                        medicationLogs: medicationLogs,
-                                        modelContext: modelContext,
-                                        onDelete: {
-                                            medicationToDelete = dose.medication
-                                            doseIndexToDelete = dose.doseIndex
-                                            showDeleteAlert = true
-                                        }
-                                    )
-                                }
+                        DoseTimeSection(
+                            timeOfDay: .night,
+                            doses: nightDoses,
+                            medicationLogs: medicationLogs,
+                            modelContext: modelContext,
+                            onDelete: { dose in
+                                medicationToDelete = dose.medication
+                                doseIndexToDelete = dose.doseIndex
+                                showDeleteAlert = true
                             }
-                        }
+                        )
                     }
 
                     // Empty state
@@ -352,6 +357,43 @@ struct MedicationsCard: View {
             }
 
             try? modelContext.save()
+        }
+    }
+}
+
+// MARK: - Dose Time Section (Reusable component for each time of day)
+
+struct DoseTimeSection: View {
+    let timeOfDay: TimeOfDay
+    let doses: [DoseEntry]
+    let medicationLogs: [MedicationLog]
+    let modelContext: ModelContext
+    let onDelete: (DoseEntry) -> Void
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack(spacing: 6) {
+                Image(systemName: timeOfDay.icon)
+                    .foregroundColor(timeOfDay.color)
+                    .font(.subheadline)
+                
+                Text(timeOfDay.titleKey)
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundColor(.secondary)
+            }
+
+            VStack(spacing: 8) {
+                ForEach(doses) { dose in
+                    MedicationCardWrapper(
+                        dose: dose,
+                        medicationLogs: medicationLogs,
+                        modelContext: modelContext,
+                        onDelete: {
+                            onDelete(dose)
+                        }
+                    )
+                }
+            }
         }
     }
 }
