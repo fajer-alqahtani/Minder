@@ -463,14 +463,14 @@
       "localizations" : {
         "ar" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "كم أكل اليوم؟"
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "How much did they ate today?"
+            "value" : "How much did they eat today?"
           }
         }
       }
